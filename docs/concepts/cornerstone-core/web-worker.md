@@ -40,7 +40,7 @@ expose(obj);
 ：：：note
 正如您在上面看到的，我们的对象可以包含任意数量的函数并且可以保存本地状态。这些函数的唯一要求是参数应该是可序列化的。这意味着您不能将 DOM 元素、函数或任何其他不可序列化的对象作为参数传递。
 
-我们使用对象作为参数。因此，在上面我们使用“fib({value})”而不是“fib(value)”（“value”只是一个参数名称；您可以为参数使用任何您想要的名称。）
+我们使用对象作为参数。因此，在上面我们使用`fib({value})`而不是`fib(value)`（`value`只是一个参数名称；您可以为参数使用任何您想要的名称。）
 :::
 现在关键是要告知Cornerstone这个功能，让它在后台顺利运行。让我们深入了解一下。
 
@@ -115,13 +115,12 @@ workerManager.registerWorker('ohif-worker', workerFn, options);
 - `methodName`：我们要在worker上执行的方法的名称（函数名称，在上面的示例中为`fib`或`inc`）
 - `args` (`default = {}`)：传递给函数的参数。参数应该是可序列化的，这意味着您不能将 DOM 元素、函数或任何其他不可序列化对象作为参数传递（请检查下面如何传递不可序列化函数）
 - `options` 具有以下属性的对象：
-- `requestType (default = RequestType.COMPUTE)` ：请求的组。这用于确定请求的优先级。默认为“RequestType.COMPUTE”，这是最低优先级。
-    其他组按优先级排列为“RequestType.INTERACTION”和“RequestType.THUMBNAIL”、“RequestType.PREFETCH”
-  - `priority` (`default = 0`)：指定组内请求的优先级。数字越小，优先级越高。
+- `requestType (default = RequestType.COMPUTE)` ：请求的组。这用于确定请求的优先级。默认为`RequestType.COMPUTE`，这是最低优先级。其他组按优先级排列为`RequestType.INTERACTION`和`RequestType.THUMBNAIL`、`RequestType.PREFETCH`
+- `priority` (`default = 0`)：指定组内请求的优先级。数字越小，优先级越高。
 - `options` (`default= {}`)：池管理器的选项（您很可能不需要更改它）
-  - `callbacks` (`default = []`)：传入您想要在工作程序内部调用的任何函数。
+- `callbacks` (`default = []`)：传入您想要在工作程序内部调用的任何函数。
 
-现在要在工作线程上执行“fib”函数，我们将执行以下操作：
+现在要在工作线程上执行`fib`函数，我们将执行以下操作：
 
 ```js
 import { getWebWorkerManager } from '@cornerstonejs/core';
@@ -130,7 +129,7 @@ const workerManager = getWebWorkerManager();
 workerManager.executeTask('ohif-worker', 'fib', { value: 10 });
 ```
 
-上面的代码将在名称为“ohif-worker”、参数为“{value: 10}”的工作线程上执行“fib”函数。当然这是一个简化的例如，通常您需要在任务完成或失败时执行某些操作。自从回归以来`executeTask` 是一个 Promise，你可以使用 `then` 和 `catch` 方法来处理结果。
+上面的代码将在名称为`ohif-worker`、参数为`{value:10}`的工作线程上执行`fib`函数。当然这是一个简化的例如，通常您需要在任务完成或失败时执行某些操作。自从回归以来`executeTask` 是一个 Promise，你可以使用 `then` 和 `catch` 方法来处理结果。
 
 ```js
 workerManager
@@ -158,7 +157,7 @@ try {
 
 ### `eventListeners`
 
-有时，需要向worker提供回调函数。例如，如果您希望在工作人员取得进展时更新用户界面。如前所述，不可能直接将函数作为参数传递给工作程序。但是，您可以通过利用选项中的“callbacks”属性来解决此问题。这些“回调”可以根据其位置作为参数方便地传递给函数。
+有时，需要向worker提供回调函数。例如，如果您希望在工作人员取得进展时更新用户界面。如前所述，不可能直接将函数作为参数传递给工作程序。但是，您可以通过利用选项中的`callbacks`属性来解决此问题。这些`回调`可以根据其位置作为参数方便地传递给函数。
 
 代码库中的真实示例：
 
@@ -205,4 +204,4 @@ expose(obj);
 
 ### `terminate`
 
-要终止worker，您可以使用“webWorkerManager.terminate(workerName)”。停止给定工作线程的所有实例并清理资源。
+要终止worker，您可以使用`webWorkerManager.terminate(workerName)`。停止给定工作线程的所有实例并清理资源。

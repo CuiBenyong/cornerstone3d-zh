@@ -10,15 +10,15 @@ const config: Config = {
   favicon: 'img/favicon.ico',
 
   // 在这里设置你网站的生产 URL
-  url: 'https://your-docusaurus-site.example.com',
+  url: 'https://worldrecently.news',
   // 设置网站的 /<baseUrl>/ 路径
   // 对于 GitHub Pages 部署，通常是 '/<projectName>/'
   baseUrl: '/',
 
   // GitHub Pages 部署配置。
   // 如果你没有使用 GitHub Pages，则不需要这些配置。
-  organizationName: 'xuanyi', // 通常是你的 GitHub 组织/用户名。
-  projectName: 'cornerstone3D-doc', // 通常是你的仓库名。
+  // organizationName: 'CuiBenyong', // 通常是你的 GitHub 组织/用户名。
+  // projectName: 'cornerstone3d-zh', // 通常是你的仓库名。
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',

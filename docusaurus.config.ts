@@ -60,6 +60,24 @@ const config: Config = {
         theme: {
           customCss: './src/css/custom.css',
         },
+        sitemap: {
+          lastmod: 'date',
+          changefreq: 'weekly',
+          priority: 0.5,
+          ignorePatterns: ['/tags/**'],
+          filename: 'sitemap.xml',
+          createSitemapItems: async (params) => {
+            const {defaultCreateSitemapItems, ...rest} = params;
+            const items = await defaultCreateSitemapItems(rest);
+            const result = items.map((item) => {
+              return {
+                ...item,
+                url: item.url.replace('https://cornerstone3d-zh.netlify.app', 'https://worldrecently.news')
+              }
+            })
+            return result;
+          },
+        }
       } satisfies Preset.Options,
     ],
   ],
@@ -136,7 +154,8 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
-    }
+    },
+
   } satisfies Preset.ThemeConfig,
 };
 

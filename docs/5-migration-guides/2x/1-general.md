@@ -28,7 +28,7 @@ import TabItem from '@theme/TabItem';
 
 我们努力增强了使用 Cornerstone3D 时，在 React、Vue、Angular、Vite 和 Webpack 等各种框架中的开发体验。
 
-有关更多信息，请参阅[框架](../../getting-started/vue-angular-react-etc.md)页面。
+有关更多信息，请参阅[框架](../../2-getting-started/vue-angular-react-etc.md)页面。
 
 您需要修改您的 Vite 和 Webpack 配置，以便正确导入 Cornerstone3D 库。请查看各框架的仓库以获取更多细节。
 

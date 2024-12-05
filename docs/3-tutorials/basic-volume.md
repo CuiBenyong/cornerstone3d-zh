@@ -236,14 +236,14 @@ run();
 
 了解更多内容：
 
-- [体积](../concepts/cornerstone-core/volumes.md)
-- [渲染引擎](../concepts/cornerstone-core/renderingEngine.md)
-- [视口](../concepts/cornerstone-core/viewports.md)
+- [体积](../1-concepts/cornerstone-core/volumes.md)
+- [渲染引擎](../1-concepts/cornerstone-core/renderingEngine.md)
+- [视口](../1-concepts/cornerstone-core/viewports.md)
 
 有关 Volume Viewport 的高级用法，请访问 <a href="/live-examples/volumeAPI.html" target="_blank">VolumeViewport API</a> 示例页面。
 
 :::note 提示
 
-- 访问 [示例](../examples.md) 页面，了解如何在本地运行示例。
+- 访问 [示例](https://www.cornerstonejs.org/docs/examples) 页面，了解如何在本地运行示例。
 
 :::

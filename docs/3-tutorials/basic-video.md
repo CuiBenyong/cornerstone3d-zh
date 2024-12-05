@@ -136,8 +136,8 @@ run();
 
 :::note 提示
 
-- 访问[示例](examples.md#run-examples-locally)页面以查看如何在本地运行示例。
-- 检查如何调试示例，请参阅[调试](examples.md#debugging)部分。
+- 访问[示例](https://www.cornerstonejs.org/docs/examples#run-examples-locally)页面以查看如何在本地运行示例。
+- 检查如何调试示例，请参阅[调试](https://www.cornerstonejs.org/docs/examples#debugging)部分。
 
 :::
 

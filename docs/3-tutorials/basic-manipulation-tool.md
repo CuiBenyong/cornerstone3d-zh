@@ -231,5 +231,5 @@ run();
 
 了解更多关于：
 
-- [ToolGroup](../concepts/cornerstone-tools/toolGroups.md)
-- [Tools](../concepts/cornerstone-tools/tools.md)
+- [ToolGroup](../1-concepts/cornerstone-tools/toolGroups.md)
+- [Tools](../1-concepts/cornerstone-tools/tools.md)

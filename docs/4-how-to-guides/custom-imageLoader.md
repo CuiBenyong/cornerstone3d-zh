@@ -7,13 +7,13 @@ title: 自定义图像加载器
 
 在这个操作指南中，我们将向您展示如何创建一个自定义图像加载器。您应该熟悉以下核心概念：
 
-- [图像加载器](../concepts/cornerstone-core/imageLoader.md)
-- [图像对象](../concepts/cornerstone-core/images.md)
-- [元数据提供者](../concepts/cornerstone-core/metadataProvider.md)
+- [图像加载器](../1-concepts/cornerstone-core/imageLoader.md)
+- [图像对象](../1-concepts/cornerstone-core/images.md)
+- [元数据提供者](../1-concepts/cornerstone-core/metadataProvider.md)
 
 ## 介绍
 
-Cornerstone **不**处理图像加载。它将图像加载委托给[图像加载器](../concepts/cornerstone-core/imageLoader.md)。Cornerstone团队已经开发了常用的图像加载器（如用于从符合wado标准的dicom服务器加载图像的`CornerstoneDICOMImageLoader`，通过`wado-rs`或`wado-uri`加载，加载PNG和JPEG网页图像的`CornerstoneWebImageLoader`以及用于加载NIFTI图像的`cornerstone-nifti-image-loader`）。然而，您可能会问自己：
+Cornerstone **不**处理图像加载。它将图像加载委托给[图像加载器](../1-concepts/cornerstone-core/imageLoader.md)。Cornerstone团队已经开发了常用的图像加载器（如用于从符合wado标准的dicom服务器加载图像的`CornerstoneDICOMImageLoader`，通过`wado-rs`或`wado-uri`加载，加载PNG和JPEG网页图像的`CornerstoneWebImageLoader`以及用于加载NIFTI图像的`cornerstone-nifti-image-loader`）。然而，您可能会问自己：
 
 :::note 如何实现
 
@@ -23,7 +23,7 @@ Cornerstone **不**处理图像加载。它将图像加载委托给[图像加载
 
 ## 实现
 
-让我们实现一个`imageLoader`，使用`XMLHttpRequest`获取像素数据，并返回一个包含Promise的图像加载对象，该Promise解析为Cornerstone的[`image`](../concepts/cornerstone-core/images.md)。
+让我们实现一个`imageLoader`，使用`XMLHttpRequest`获取像素数据，并返回一个包含Promise的图像加载对象，该Promise解析为Cornerstone的[`image`](../1-concepts/cornerstone-core/images.md)。
 
 ### 步骤1：创建图像加载器
 
@@ -69,7 +69,7 @@ function loadImage(imageId) {
 
 ### 步骤2：确保图像元数据也可用
 
-我们的图像加载器返回一个包含像素数据及相关信息的`imageLoadObject`，但Cornerstone可能还需要[额外的元数据](../concepts/cornerstone-core/metadataProvider.md)来显示图像。请参阅[自定义元数据提供者](custom-metadata-provider.md)文档以了解如何执行此操作。
+我们的图像加载器返回一个包含像素数据及相关信息的`imageLoadObject`，但Cornerstone可能还需要[额外的元数据](../1-concepts/cornerstone-core/metadataProvider.md)来显示图像。请参阅[自定义元数据提供者](custom-metadata-provider.md)文档以了解如何执行此操作。
 
 ### 步骤3：图像加载器的注册
 

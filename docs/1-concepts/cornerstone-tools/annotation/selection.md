@@ -31,5 +31,5 @@ annotation.selection.getAnnotationsSelectedByToolName(toolName);
 ## 阅读更多
 
 :::note TIP
-在 [**这里**](/api/tools/namespace/annotation#selection) 阅读更多关于选择 API 的内容
+在 [**这里**](https://www.cornerstonejs.org/api/tools/namespace/annotation#selection) 阅读更多关于选择 API 的内容
 :::

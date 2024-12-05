@@ -9,7 +9,7 @@ title: 图像加载器
 
 ## 图像加载器工作流程  
 
-1. `ImageLoaders` 使用 [`registerImageLoader`](/api/core/namespace/imageLoader#registerImageLoader) API 向 Cornerstone 注册自己，以加载特定的 ImageId URL 方案  
+1. `ImageLoaders` 使用 [`registerImageLoader`](https://www.cornerstonejs.org/api/core/namespace/imageLoader#registerImageLoader) API 向 Cornerstone 注册自己，以加载特定的 ImageId URL 方案  
 2. 应用程序通过 `loadImage` API 请求加载图像（用于堆栈）或通过 `createAndCacheVolume` API 请求加载体积图像  
 3. Cornerstone 将加载图像的请求委托给已注册的 `ImageLoader`，该加载器根据图像 Id 的 URL 方案处理请求  
 4. `ImageLoader` 将返回一个 `Image Load Object`，其中包含一个 Promise，当它获取到像素数据时会解析该 Promise 并返回相应的图像对象。获取像素数据可能需要通过 `XMLHttpRequest` 调用远程服务器，解压像素数据（例如，从 JPEG 2000 格式解压），并将像素数据转换为 Cornerstone 能够理解的格式（例如，RGB 与 YBR 颜色格式）  
@@ -17,7 +17,7 @@ title: 图像加载器
 
 ## 注册图像加载器  
 
-您可以使用 [`registerImageLoader`](/api/core/namespace/imageLoader#registerImageLoader) 将外部图像加载器提供给 Cornerstone 库。此函数接受一个 `scheme`，图像加载器函数（第二个参数）应根据该方案进行处理。  
+您可以使用 [`registerImageLoader`](https://www.cornerstonejs.org/api/core/namespace/imageLoader#registerImageLoader) 将外部图像加载器提供给 Cornerstone 库。此函数接受一个 `scheme`，图像加载器函数（第二个参数）应根据该方案进行处理。  
 
 ## 可用的图像加载器  
 

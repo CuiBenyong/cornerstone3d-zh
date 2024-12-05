@@ -96,7 +96,7 @@ ctToolGroup.setToolActive(StackScrollMouseWheelTool.toolName);
 
 ### `getToolGroupForViewport`
 
-返回给定视口的 ToolGroup，更多阅读 [这里](/api/tools/namespace/ToolGroupManager#getToolGroupForViewport)
+返回给定视口的 ToolGroup，更多阅读 [这里](https://www.cornerstonejs.org/api/tools/namespace/ToolGroupManager#getToolGroupForViewport)
 
 ### `getToolGroup`
 

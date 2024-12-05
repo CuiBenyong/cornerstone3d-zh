@@ -32,7 +32,7 @@ title: 触摸事件
 
 ## 多点触摸
 
-触摸事件本身支持多点触摸，以[`ITouchPoints[]`](api/tools/namespace/Types#ITouchPoints)提供。
+触摸事件本身支持多点触摸，以[`ITouchPoints[]`](https://www.cornerstonejs.org/docs/api/tools/namespace/Types#ITouchPoints)提供。
 为了使触摸事件与鼠标事件兼容，这些`ITouchPoints[]`需要被简化为一个
 `ITouchPoint`。当前的数组简化策略是取平均坐标值。可以实现其他策略，如第一个点、中位数点等。这可以在
 [`touch` utilities codebase](https://github.com/cornerstonejs/cornerstone3D/main/packages/tools/src/utilities/touch/index.ts)实现。

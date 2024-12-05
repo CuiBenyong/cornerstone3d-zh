@@ -93,16 +93,16 @@ import Link from '@docusaurus/Link';
 
 我们的文档可以分为以下几个部分：
 
-- [**快速入门**](/docs/category/getting-started)：介绍项目范围、相关库和其他相关信息，以及安装说明
-- [**教程**](/docs/category/tutorials)：提供一系列不同任务的教程，如渲染、工具、分割
-- [**操作指南**](/docs/category/how-to-guides)：提供更高级任务的指南，如自定义加载器、自定义元数据提供者
-- [**概念**](/docs/category/concepts)：深入解释库中使用的各种技术概念
-- [**贡献**](/docs/category/contributing)：解释如何为项目做出贡献以及如何报告错误
-- [**迁移指南**](/docs/migrationGuides)：包括从旧版本升级到新版本的说明，以及从 1.x升级到 2.x的说明
-- [**常见问题**](/docs/faq)：提供常见问题的答案
-- [**帮助**](/docs/help)：提供如何获取库帮助的信息
-- [**测试覆盖率报告**](/test-coverage/)：提供库的测试覆盖率的详细报告
-- [**示例**](/docs/examples)：显示库的实时示例
-- [**API 参考**](/api)：提供 API 的详细描述以及如何使用每个函数
+- [**快速入门**](/docs/2-getting-started/index.md)：介绍项目范围、相关库和其他相关信息，以及安装说明
+- [**教程**](/docs/3-tutorials/index.md)：提供一系列不同任务的教程，如渲染、工具、分割
+- [**操作指南**](/docs/4-how-to-guides/index.md)：提供更高级任务的指南，如自定义加载器、自定义元数据提供者
+- [**概念**](/docs/1-concepts/index.md)：深入解释库中使用的各种技术概念
+- [**贡献**](/docs/6-contribute/index.md)：解释如何为项目做出贡献以及如何报告错误
+- [**迁移指南**](/docs/5-migration-guides/index.md)：包括从旧版本升级到新版本的说明，以及从 1.x升级到 2.x的说明
+- [**常见问题**](/docs/faq.md)：提供常见问题的答案
+- [**帮助**](/docs/help.md)：提供如何获取库帮助的信息
+- [**测试覆盖率报告**](https://www.cornerstonejs.org/test-coverage)：提供库的测试覆盖率的详细报告
+- [**示例**](https://www.cornerstonejs.org/docs/examples)：显示库的实时示例
+- [**API 参考**](https://www.cornerstonejs.org/docs/api/core)：提供 API 的详细描述以及如何使用每个函数
 
-如果某个页面不再最新，您可以通过修改 `/packages/docs/docs/*.md` 文件来提出 PR 进行更新。阅读更多关于如何贡献的信息 [这里](../contribute/pull-request.md)。
+如果某个页面不再最新，您可以通过修改 `/packages/docs/docs/*.md` 文件来提出 PR 进行更新。阅读更多关于如何贡献的信息 [这里](/docs/6-contribute/pull-request.md)。

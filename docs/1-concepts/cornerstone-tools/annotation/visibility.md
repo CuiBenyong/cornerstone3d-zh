@@ -31,5 +31,5 @@ annotation.visibility.isAnnotationVisible(annotationUID);
 ## 阅读更多
 
 :::note 提示
-在[此处](/api/tools/namespace/annotation#visibility)阅读更多关于可见性 API 的信息
+在[此处](https://www.cornerstonejs.org/api/tools/namespace/annotation#visibility)阅读更多关于可见性 API 的信息
 :::

@@ -8,9 +8,9 @@ import Link from '@docusaurus/Link';
 
 # 示例
 
-我们已经编写了大量示例，你可以在[这里](/docs/examples)访问它们。当你点击一个示例时，你将被带到该示例的页面。你可以与每个示例进行互动，查看它是如何工作的。
+我们已经编写了大量示例，你可以在[这里](https://www.cornerstonejs.org/docs/examples)访问它们。当你点击一个示例时，你将被带到该示例的页面。你可以与每个示例进行互动，查看它是如何工作的。
 
-<Link to="/docs/examples">
+<Link to="https://www.cornerstonejs.org/docs/examples">
     <div id="open-example-button">
         点击这里打开示例页面
     </div>

@@ -7,7 +7,7 @@ title: 同步器
 
 同步器可用于链接视口之间的特定动作（例如同步平移/缩放交互），但也可以用于将任意回调绑定到特定事件。同步器需要：
 
-- 一个要监听的[`事件`](/api/core/namespace/Enums#Events)
+- 一个要监听的[`事件`](https://www.cornerstonejs.org/api/core/namespace/Enums#Events)
 - 当该事件在源视口上触发时要调用的函数
 - 一个`源`视口数组
 - 一个`目标`视口数组

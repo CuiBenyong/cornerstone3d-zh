@@ -7,9 +7,9 @@ title: 自定义元数据提供者
 
 在本操作指南中，我们将展示如何创建一个自定义元数据提供者。您应该熟悉以下核心概念：
 
-- [图像加载器](../concepts/cornerstone-core/imageLoader.md)
-- [图像对象](../concepts/cornerstone-core/images.md)
-- [元数据提供者](../concepts/cornerstone-core/metadataProvider.md)
+- [图像加载器](../1-concepts/cornerstone-core/imageLoader.md)
+- [图像对象](../1-concepts/cornerstone-core/images.md)
+- [元数据提供者](../1-concepts/cornerstone-core/metadataProvider.md)
 
 ## 简介 {#introduction}
 
@@ -44,7 +44,7 @@ function add(imageId, scalingMetaData) {
 
 <summary>imageId vs imageURI</summary>
 
-随着 `Cornerstone3D` 中 `Volumes` 的增加，以及在 `Volumes` 和 `Images` 之间内部发生的缓存优化（[`imageLoader`](../concepts/streaming-image-volume/streaming.md#imageloader)），我们应该在提供者的缓存中存储 imageURI（而不是 `imageId`），因为 imageURI 对每个图像都是唯一的，但可以通过不同的加载方案检索。
+随着 `Cornerstone3D` 中 `Volumes` 的增加，以及在 `Volumes` 和 `Images` 之间内部发生的缓存优化（[`imageLoader`](../1-concepts/streaming-image-volume/streaming.md#imageloader)），我们应该在提供者的缓存中存储 imageURI（而不是 `imageId`），因为 imageURI 对每个图像都是唯一的，但可以通过不同的加载方案检索。
 
 </details>
 

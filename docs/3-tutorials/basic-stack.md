@@ -153,14 +153,14 @@ run();
 
 了解更多关于：
 
-- [imageId](../concepts/cornerstone-core/imageId.md)
-- [渲染引擎](../concepts/cornerstone-core/renderingEngine.md)
-- [视口](../concepts/cornerstone-core/viewports.md)
+- [imageId](../1-concepts/cornerstone-core/imageId.md)
+- [渲染引擎](../1-concepts/cornerstone-core/renderingEngine.md)
+- [视口](../1-concepts/cornerstone-core/viewports.md)
 
 如需了解更高级的`Stack Viewport`用法，请访问[StackViewport API](https://www.cornerstonejs.org/live-examples/stackapi)示例页面。
 
 :::note 提示
 
-- 访问[示例](../examples.md)页面查看如何在本地运行示例。
+- 访问[示例](https://www.cornerstonejs.org/docs/examples)页面查看如何在本地运行示例。
 
 :::

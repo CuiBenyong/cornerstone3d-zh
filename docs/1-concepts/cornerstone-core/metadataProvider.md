@@ -25,7 +25,7 @@ function metadataProvider(type: string, imageId: string): Record<string, any>
 
 元数据提供者的 `type` 参数可以是任何字符串。您可以使用 `cornerstone.metaData.get()` 调用任何类型，如果任何元数据提供者可以为给定的图像 ID 提供该类型，则会收到响应。例如，您可以用它轻松提供应用程序特定的信息，如地面真相或病人信息。  
 
-Cornerstone 核心和工具也会自动请求显示图像的各种类型的元数据。标准元数据模块的列表可以在 API 参考的 [MetadataModules 部分](/api/core/namespace/Enums#MetadataModules) 中找到。许多这些模块符合 DICOM 标准。如果您想在 [自定义元数据提供者](../../how-to-guides/custom-metadata-provider.md) 中实现它们，最简单的方法是查看现有元数据提供者如何实现它们，例如 [WADOURI 元数据提供者](https://github.com/cornerstonejs/cornerstone3D/blob/main/packages/dicomImageLoader/src/imageLoader/wadouri/metaData/metaDataProvider.ts#L65)。
+Cornerstone 核心和工具也会自动请求显示图像的各种类型的元数据。标准元数据模块的列表可以在 API 参考的 [MetadataModules 部分](https://www.cornerstonejs.org/api/core/namespace/Enums#MetadataModules) 中找到。许多这些模块符合 DICOM 标准。如果您想在 [自定义元数据提供者](../../4-how-to-guides/custom-metadata-provider.md) 中实现它们，最简单的方法是查看现有元数据提供者如何实现它们，例如 [WADOURI 元数据提供者](https://github.com/cornerstonejs/cornerstone3D/blob/main/packages/dicomImageLoader/src/imageLoader/wadouri/metaData/metaDataProvider.ts#L65)。
 
 ## 元数据提供者的优先级  
 

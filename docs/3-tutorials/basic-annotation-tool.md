@@ -296,14 +296,14 @@ run();
 
 了解更多内容：
 
-- [ToolGroup](../concepts/cornerstone-tools/toolGroups.md)
-- [注释](../concepts/cornerstone-tools/annotation/index.md)
+- [ToolGroup](../1-concepts/cornerstone-tools/toolGroups.md)
+- [注释](../1-concepts/cornerstone-tools/annotation/index.md)
 
 要了解更高级的注释工具用法，请访问<a href="/live-examples/volumeAnnotationTools.html" target="_blank">Volume Annotation Tools</a>示例页面。
 
 :::note 提示
 
-- 访问[示例](examples.md#run-examples-locally)页面，了解如何在本地运行示例。
-- 查看[调试](examples.md#debugging)部分，了解如何调试示例。
+- 访问[示例](https://www.cornerstonejs.org/docs/examples#run-examples-locally)页面，了解如何在本地运行示例。
+- 查看[调试](https://www.cornerstonejs.org/docs/examples#debugging)部分，了解如何调试示例。
 
 :::

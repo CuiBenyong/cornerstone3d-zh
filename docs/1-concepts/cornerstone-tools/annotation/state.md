@@ -73,5 +73,5 @@ cornerstone3DTools.annotation.state.getAnnotation(annotationUID);
 ## 阅读更多
 
 :::note TIP
-阅读更多关于状态 API 的信息 [这里](/api/tools/namespace/annotation#state)
+阅读更多关于状态 API 的信息 [这里](https://www.cornerstonejs.org/api/tools/namespace/annotation#state)
 :::

@@ -27,5 +27,5 @@ annotation.locking.unlockAllAnnotations();
 ## 阅读更多
 
 :::note TIP
-在[这里](/api/tools/namespace/annotation#locking)阅读更多关于锁定 API 的信息
+在[这里](https://www.cornerstonejs.org/api/tools/namespace/annotation#locking)阅读更多关于锁定 API 的信息
 :::

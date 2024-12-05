@@ -36,11 +36,6 @@ export default function Home(): JSX.Element {
       title={`来自 ${siteConfig.title} 的问候`}
       description="描述将添加到 <head /> 中的 meta 标签"
     >
-      <script
-        async
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9580076271637088"
-        crossorigin="anonymous"
-      ></script>
       <HomepageHeader />
       <main>
         <HomepageFeatures />

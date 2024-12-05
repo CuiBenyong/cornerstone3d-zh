@@ -157,6 +157,12 @@ const config: Config = {
     },
 
   } satisfies Preset.ThemeConfig,
+  scripts: [
+    {
+      src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9580076271637088',
+      crossorigin: 'anonymous'
+    }
+  ]
 };
 
 export default config;

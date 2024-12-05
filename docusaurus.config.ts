@@ -40,7 +40,7 @@ const config: Config = {
           // 请将此路径修改为你的仓库。
           // 如果不需要 "编辑此页面" 链接，请删除此配置。
           editUrl:
-            'https://github.com/CuiBenyong/cornerstone3d-zh/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/CuiBenyong/cornerstone3d-zh/tree/main/',
         },
         blog: {
           showReadingTime: true,
@@ -51,7 +51,7 @@ const config: Config = {
           // 请将此路径修改为你的仓库。
           // 如果不需要 "编辑此页面" 链接，请删除此配置。
           editUrl:
-            'https://github.com/CuiBenyong/cornerstone3d-zh/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/CuiBenyong/cornerstone3d-zh/tree/main/',
           // 有助于强制执行博客最佳实践的配置
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',

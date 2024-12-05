@@ -66,11 +66,11 @@ const config: Config = {
 
   themeConfig: {
     // 用你的项目社交卡片替换
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'https://avatars.githubusercontent.com/u/15165477?s=400&u=f73fe33de737d7d314733fe68e61296335fc5cfc&v=4',
     navbar: {
-      title: '我的网站',
+      title: '首页',
       logo: {
-        alt: '我的网站 Logo',
+        alt: 'Logo',
         src: 'img/cornerstone-logo-badge.png',
       },
       items: [

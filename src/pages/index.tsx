@@ -19,7 +19,7 @@ function HomepageHeader() {
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            to="/docs/1-concepts/index.md">
+            to="/docs/concepts">
             cornerstone3D 中文文档
           </Link>
         </div>

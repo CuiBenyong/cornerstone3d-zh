@@ -20,7 +20,7 @@ const config: Config = {
   // organizationName: 'CuiBenyong', // 通常是你的 GitHub 组织/用户名。
   // projectName: 'cornerstone3d-zh', // 通常是你的仓库名。
 
-  onBrokenLinks: 'warn',
+  onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
   // 即使你不使用国际化，也可以通过这个字段设置有用的元数据，

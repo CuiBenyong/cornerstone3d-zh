@@ -149,7 +149,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `版权所有 © ${new Date().getFullYear()} 由 xuanyi 构建。`,
+      copyright: `版权所有 © ${new Date().getFullYear()} 由 玄一 构建。`,
     },
     prism: {
       theme: prismThemes.github,

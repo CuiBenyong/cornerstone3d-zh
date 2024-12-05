@@ -1,55 +1,55 @@
-import clsx from 'clsx';
-import Heading from '@theme/Heading';
-import styles from './styles.module.css';
+import clsx from 'clsx'
+import Heading from '@theme/Heading'
+import styles from './styles.module.css'
 
 type FeatureItem = {
-  title: string;
-  Svg: React.ComponentType<React.ComponentProps<'svg'>>;
-  description: JSX.Element;
-};
+  title: string
+  Svg: React.ComponentType<React.ComponentProps<'svg'>>
+  description: JSX.Element
+}
 
 const FeatureList: FeatureItem[] = [
-  // {
-  //   title: '易于使用',
-  //   Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
-  //   description: (
-  //     <>
-  //       Docusaurus 从零开始设计，旨在轻松安装和使用，帮助你快速搭建并运行网站。
-  //     </>
-  //   ),
-  // },
-  // {
-  //   title: '专注于重要内容',
-  //   Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
-  //   description: (
-  //     <>
-  //       Docusaurus 让你专注于文档的编写，我们会处理其他事务。只需将文档移动到 <code>docs</code> 目录中即可。
-  //     </>
-  //   ),
-  // },
-  // {
-  //   title: '基于 React',
-  //   Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
-  //   description: (
-  //     <>
-  //       通过重用 React，扩展或自定义你的网页布局。Docusaurus 可以在重用相同的头部和底部的同时进行扩展。
-  //     </>
-  //   ),
-  // },
-];
+  {
+    title: '标准兼容',
+    Svg: null,
+    description: (
+      <>
+       健壮的DICOM解析。支持DICOMweb和所有传输语法，开箱即用。
+      </>
+    ),
+  },
+  {
+    title: '快速',
+    Svg: null,
+    description: (
+      <>
+        高性能GPU加速图像显示。多线程图像解码。渐进式数据流。
+      </>
+    ),
+  },
+  {
+    title: '可扩展的',
+    Svg: null,
+    description: (
+      <>
+       设计为模块化。轻松创建您自己的工具和图像加载器。
+      </>
+    ),
+  },
+]
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({ title, Svg, description }: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
+        {/* <Svg className={styles.featureSvg} role="img" /> */}
       </div>
       <div className="text--center padding-horiz--md">
         <Heading as="h3">{title}</Heading>
         <p>{description}</p>
       </div>
     </div>
-  );
+  )
 }
 
 export default function HomepageFeatures(): JSX.Element {
@@ -63,5 +63,5 @@ export default function HomepageFeatures(): JSX.Element {
         </div>
       </div>
     </section>
-  );
+  )
 }

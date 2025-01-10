@@ -72,7 +72,8 @@ const config: Config = {
             const result = items.map((item) => {
               return {
                 ...item,
-                url: item.url.replace('https://cornerstone3d-zh.netlify.app', 'https://worldrecently.news')
+                url: item.url.replace('https://cornerstone3d-zh.netlify.app', 'https://worldrecently.news'),
+                priority: 1,
               }
             })
             return result;

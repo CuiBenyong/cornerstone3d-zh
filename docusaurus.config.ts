@@ -62,7 +62,7 @@ const config: Config = {
         },
         sitemap: {
           lastmod: 'date',
-          changefreq: 'weekly',
+          changefreq: 'never',
           priority: 0.5,
           ignorePatterns: ['/tags/**'],
           filename: 'sitemap.xml',

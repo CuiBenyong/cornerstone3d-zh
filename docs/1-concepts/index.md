@@ -235,5 +235,5 @@ sync.add(secondViewport);
 
 接下来的步骤，你可以：
 
-- [查看使用文档](#)
-- [探索我们的示例应用程序的源代码](#)
+- [查看使用文档](/docs/2-getting-started/index.md)
+- [探索我们的示例应用程序的源代码](https://github.com/cornerstonejs/cornerstone3D)

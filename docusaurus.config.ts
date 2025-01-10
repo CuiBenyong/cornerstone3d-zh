@@ -10,7 +10,7 @@ const config: Config = {
   favicon: 'img/favicon.ico',
 
   // 在这里设置你网站的生产 URL
-  url: 'https://cornerstone3d-zh.netlify.app',
+  url: 'https://cc3d-zh.netlify.app',
   // 设置网站的 /<baseUrl>/ 路径
   // 对于 GitHub Pages 部署，通常是 '/<projectName>/'
   baseUrl: '/',
@@ -72,7 +72,7 @@ const config: Config = {
             const result = items.map((item) => {
               return {
                 ...item,
-                url: item.url.replace('https://cornerstone3d-zh.netlify.app', 'https://worldrecently.news'),
+                url: item.url.replace('https://cc3d-zh.netlify.app', 'https://worldrecently.news'),
                 priority: 1,
               }
             })

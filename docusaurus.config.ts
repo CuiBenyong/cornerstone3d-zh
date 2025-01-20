@@ -66,17 +66,6 @@ const config: Config = {
           priority: 0.5,
           ignorePatterns: ['/tags/**'],
           filename: 'sitemap.xml',
-          createSitemapItems: async (params) => {
-            const {defaultCreateSitemapItems, ...rest} = params;
-            const items = await defaultCreateSitemapItems(rest);
-            const result = items.map((item) => {
-              return {
-                ...item,
-                url: item.url.replace('https://cc3d-zh.netlify.app', 'https://worldrecently.news'),
-              }
-            })
-            return result;
-          },
         }
       } satisfies Preset.Options,
     ],

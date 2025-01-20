@@ -62,7 +62,7 @@ const config: Config = {
         },
         sitemap: {
           lastmod: 'date',
-          changefreq: 'never',
+          changefreq: 'weekly',
           priority: 0.5,
           ignorePatterns: ['/tags/**'],
           filename: 'sitemap.xml',
@@ -73,7 +73,6 @@ const config: Config = {
               return {
                 ...item,
                 url: item.url.replace('https://cc3d-zh.netlify.app', 'https://worldrecently.news'),
-                priority: 1,
               }
             })
             return result;

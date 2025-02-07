@@ -23,10 +23,10 @@ import Link from '@docusaurus/Link';
 你可以在代码的任何一行设置断点，并检查正在调用的变量和函数。
 
 <!-- /由于某些原因，Vimeo嵌入会给出CORS错误 -->
-<div style={{padding:"56.25% 0 0 0", position:"relative"}}>
+<!-- <div style={{padding:"56.25% 0 0 0", position:"relative"}}>
     <iframe src="https://player.vimeo.com/video/694244249?h=06d45e5a5f&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;dnt=1"
     frameBorder="0" allow="cross-origin-isolated" allowFullScreen style= {{ position:"absolute",top:0,left:0,width:"100%",height:"100%"}} title="Examples"></iframe>
-</div>
+</div> -->
 
 ## 本地运行示例
 

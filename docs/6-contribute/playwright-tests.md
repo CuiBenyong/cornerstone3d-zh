@@ -173,7 +173,7 @@ yarn playwright show-report tests/playwright-report
 
 如果您正在使用VSCode，可以使用Playwright扩展来帮助您编写测试。该扩展提供了一个测试运行程序和许多强大功能，例如使用鼠标选择定位器、录制新测试等。您可以通过在VSCode的扩展选项卡中搜索`Playwright`或者访问[Playwright扩展页面](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright)来安装该扩展。
 
-<div style={{padding:"56.25% 0 0 0", position:"relative"}}>
+<!-- <div style={{padding:"56.25% 0 0 0", position:"relative"}}>
     <iframe src="https://player.vimeo.com/video/949208495?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
     frameBorder="0" allow="cross-origin-isolated" allowFullScreen style= {{ position:"absolute",top:0,left:0,width:"100%",height:"100%"}} title="Playwright Extension"></iframe>
-</div>
+</div> -->

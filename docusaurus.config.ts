@@ -82,10 +82,32 @@ const config: Config = {
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
+          // type: 'doc',
+          // docId: 'concepts/concepts-index',
+          to: '/docs/concepts',
+          position: 'left',
+          label: '文档',
+        },
+        {
+          // type: 'doc',
+          // docId: 'tutorials/basic-annotation-tool',
+          to: '/docs/tutorials/basic-annotation-tool',
           position: 'left',
           label: '教程',
+        },
+        {
+          // type: 'doc',
+          // docId: 'tutorials/basic-annotation-tool',
+          to: '/docs/help',
+          position: 'right',
+          label: '帮助',
+        },
+        {
+          // type: 'doc',
+          // docId: 'tutorials/basic-annotation-tool',
+          to: '/docs/faq',
+          position: 'right',
+          label: 'FAQ',
         },
         // {to: '/blog', label: '博客', position: 'left'},
         {
@@ -102,8 +124,12 @@ const config: Config = {
           title: '文档',
           items: [
             {
-              label: '教程',
+              label: '概念',
               to: '/docs/concepts/cornerstone-core',
+            },
+            {
+              label: '教程',
+              to: '/docs/tutorials/basic-annotation-tool',
             },
           ],
         },

@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://worldrecently.news/sitemap.xml
+Sitemap: https://cornerstone3d-zh.front-end-js.top/sitemap.xml

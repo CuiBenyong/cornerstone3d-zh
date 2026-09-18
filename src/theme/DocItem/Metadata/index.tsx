@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import React from 'react'
 import Metadata from '@theme-original/DocItem/Metadata'
 import type MetadataType from '@theme/DocItem/Metadata'

@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import React, { useRef } from 'react'
 import Content from '@theme-original/DocItem/Content'
 import type ContentType from '@theme/DocItem/Content'

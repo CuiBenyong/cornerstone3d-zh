@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import Heading from '@theme/Heading'
 import styles from './styles.module.css'
 

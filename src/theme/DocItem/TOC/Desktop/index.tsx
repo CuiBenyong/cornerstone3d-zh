@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import React from 'react'
 import Desktop from '@theme-original/DocItem/TOC/Desktop'
 import type DesktopType from '@theme/DocItem/TOC/Desktop'

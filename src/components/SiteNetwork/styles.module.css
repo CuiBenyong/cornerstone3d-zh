@@ -1,0 +1,133 @@
+/*
+ * 站点网络卡片。
+ *
+ * 配色全部取自 Infima 的主题变量，没有引入任何新的颜色值。这是有意的：
+ * 写死颜色会在暗色模式下失效，而且会和站点既有的绿色主色调冲突。
+ * 用变量的话，暗色模式自动生效，将来改主色也只需改 custom.css 一处。
+ *
+ * 视觉上刻意保持克制，不用阴影、渐变和悬停放大。这个区块紧挨着底部广告，
+ * 如果做得花哨，读者会把它当成广告而跳过，AdSense 也要求广告与站内内容
+ * 有清晰区分——反过来说，站内导航也不该长得像广告。
+ */
+
+.network {
+  /* 与上方的底部广告拉开明确距离，避免两个区块被看成一体 */
+  margin: 3rem 0 1rem;
+}
+
+.heading {
+  margin: 0 0 1rem;
+  color: var(--ifm-color-content-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  margin: 0;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem 1rem 1rem 1.25rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-card-border-radius, 6px);
+  background: var(--ifm-card-background-color, var(--ifm-background-surface-color));
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 200ms ease;
+}
+
+/*
+ * 左侧竖线。Cornerstone3D 渲染的是医学影像视口，视口里用细线标记当前切片位置，
+ * 这里借用了那个视觉语言：静止时只有一段，悬停时贯通整张卡片。
+ */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  left: 0;
+  width: 2px;
+  height: 2rem;
+  border-radius: 0 2px 2px 0;
+  background: var(--ifm-color-primary);
+  transition: top 200ms ease, height 200ms ease;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.card:hover::before,
+.card:focus-visible::before {
+  top: 0;
+  height: 100%;
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+}
+
+.badge {
+  margin-bottom: 0.625rem;
+  color: var(--ifm-color-content-secondary);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+}
+
+.name {
+  color: var(--ifm-heading-color);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.card:hover .name,
+.card:focus-visible .name {
+  color: var(--ifm-color-primary);
+}
+
+.tagline {
+  margin-top: 0.125rem;
+  color: var(--ifm-color-primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.description {
+  margin-top: 0.5rem;
+  color: var(--ifm-color-content-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 996px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+/* 尊重系统的减少动效设置 */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card::before {
+    transition: none;
+  }
+}

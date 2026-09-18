@@ -1,0 +1,81 @@
+.adSlot {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  /* 广告默认不占满整个内容宽度上下的空白，靠外层容器控制间距 */
+  margin: 0;
+}
+
+.adPlaceholder {
+  display: block;
+  width: 100%;
+}
+
+/*
+ * 没有填充到广告时收起整个区块。
+ *
+ * AdSense 在无广告可投时会给 ins 元素加上 data-ad-status="unfilled"。
+ * 不处理这种情况的话，页面上会留下一个预留了高度、带着「广告」标签的空白框——
+ * 广告拦截插件、库存不足、新广告位还在审核中都会导致这个结果，并不罕见。
+ *
+ * 这和上面预留高度的目的看似矛盾，实际是两种情况的分别处理：
+ * 预留高度避免广告正常加载时把内容顶开，收起则避免广告没来时留下一个空洞。
+ * 收起动作本身会产生一次位移，但只发生在没有广告的情况下，
+ * 比永久留一个空白框要好。
+ *
+ * 这里只是隐藏一个空容器，没有改动任何已投放广告的展示方式。
+ */
+:global(ins.adsbygoogle[data-ad-status='unfilled']) {
+  display: none !important;
+}
+
+.adContainer:has(:global(ins.adsbygoogle[data-ad-status='unfilled'])),
+.adTocContainer:has(:global(ins.adsbygoogle[data-ad-status='unfilled'])) {
+  display: none;
+}
+
+/*
+ * 广告容器。
+ *
+ * 上下的分隔线和「广告」标签不是装饰，而是合规要求：AdSense 要求广告与
+ * 正文内容有明确区分，避免读者把广告误认为文档内容而产生误点击。
+ * 误点击会被判定为无效流量，反而损害账号。
+ */
+.adContainer {
+  margin: 2.5rem 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--ifm-toc-border-color);
+}
+
+.adContainer::before {
+  content: '广告';
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--ifm-color-emphasis-500);
+  font-size: 0.75rem;
+  line-height: 1;
+  letter-spacing: 0.05em;
+}
+
+/* 右侧目录下方的广告，跟随目录一起滚动 */
+.adTocContainer {
+  margin-top: 1.5rem;
+  padding: 0 var(--ifm-navbar-padding-horizontal);
+}
+
+.adTocContainer::before {
+  content: '广告';
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--ifm-color-emphasis-500);
+  font-size: 0.75rem;
+  line-height: 1;
+  letter-spacing: 0.05em;
+}
+
+/* 窄屏下目录广告不显示，避免在手机上堆叠过多广告 */
+@media (max-width: 996px) {
+  .adTocContainer {
+    display: none;
+  }
+}

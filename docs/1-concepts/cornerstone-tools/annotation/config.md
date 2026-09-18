@@ -1,79 +1,101 @@
 ---
 id: config
-title: 配置
+title: 样式配置
+description: 标注样式的分层配置体系。样式按「标注级 → 视口级 → 工具组级 → 全局默认级」的优先级解析，每一层内部又分为按工具和全局两档。本文说明该层级的解析顺序、默认样式取值、四个层级各自的设置方法，以及全部可配置样式属性的清单。
+keywords:
+  - 标注样式
+  - setAnnotationStyles
+  - setViewportToolStyle
+  - setToolGroupToolStyles
+  - setDefaultToolStyle
+  - colorHighlighted
+  - lineDash
+  - textBox 样式
+upstream: https://www.cornerstonejs.org/docs/concepts/cornerstone-tools/annotation/config
 ---
 
-在本节中，我们将解释更改工具样式的各种方法。这包括各种属性，例如在 `selected`、`highlighted` 或 `locked` 状态下的 `color`；文本框颜色、线条虚线样式和粗细等。
+本节介绍修改工具样式的各种方式，包括在 `selected`、`highlighted`、`locked`
+等状态下的 `color`，以及文本框颜色、线条虚线样式与粗细等诸多属性。
 
-## 样式层次结构
+## 样式层级 {#style-hierarchy}
 
-我们将从查看样式的层次结构开始。样式层次结构如下所示。
+先从样式层级说起。层级结构如下：
 
-- 注释级别设置（带 UID）**set/getAnnotationToolStyle**
-  - 视口级别工具设置 **set/getViewportToolStyle**
-    - 每个工具的这一层：此视口上的长度
-    - 全局这一层：此视口中的所有工具
-      - 工具组设置（适用于工具组中所有视口中指定的任何工具）**set/getToolGroupToolStyle**
-        - 每个工具层：工具组中所有视口上的角度
-        - 全局这一层：工具组中所有视口内的所有工具
-          - 默认级别：**set/getDefaultToolStyle**
-            - 每个工具层（长度）设置
-            - 全局（应用程序级别）设置（我们提供默认值）。
+- 标注级设置（带 UID）**set/getAnnotationToolStyle**
+  - 视口级工具设置 **set/getViewportToolStyle**
+    - 本层按工具：该视口上的 Length 工具
+    - 本层全局：该视口中的所有工具
+      - 工具组设置（作用于该工具组所有视口中、该工具组内指定的任何工具）**set/getToolGroupToolStyle**
+        - 本层按工具：该工具组所有视口中的 Angle 工具
+        - 本层全局：该工具组所有视口中的所有工具
+          - 默认级：**set/getDefaultToolStyle**
+            - 按工具（如 Length）的设置
+            - 全局（应用级）设置（我们提供了一份默认值）
 
-在注释渲染循环中，获取某个属性的样式（`color`、`lineDash`、`lineThickness`）时，我们检查样式是否在注释级别设置（最高优先级）。
-如果没有，我们检查视口注释绘制时是否设置了任何视口级别设置；但在视口级别中，我们首先检查是否设置了工具级别设置。如果没有，我们检查“全局”（视口中所有工具）级别。
-如果找不到，我们将移到下一个工具组级别。如果找不到，我们将移到下一个全局级别，即最后一个检查级别。
+在标注渲染循环中，当需要取某个属性（`color`、`lineDash`、`lineThickness`）
+的样式时，我们先检查该样式是否在标注级设置过（优先级最高）。
+若没有，就检查是否有视口级设置（针对该标注所绘制的那个视口）；
+不过在视口级内部，我们会先看按工具的设置，若没有再看「全局」
+（该视口中的所有工具）这一档。若仍未找到，就进到下一级——工具组级。
+若还是没有，就进到最后一级——全局级。
 
 ![configs](../../../assets/configs.png)
 
-## 默认设置
+## 默认设置 {#default-setting}
 
-`Cornerstone3DTools` 为 toolsStyles 类初始化了默认设置，可以在 `packages/tools/src/stateManagement/annotation/config/ToolStyle.ts` 中找到
+`Cornerstone3DTools` 为 toolsStyles 类初始化了一份默认设置，
+位置在 `packages/tools/src/stateManagement/annotation/config/ToolStyle.ts`：
 
 ```js
 {
-  color: 'rgb(255, 255, 0)',
-  colorHighlighted: 'rgb(0, 255, 0)',
-  colorSelected: 'rgb(0, 220, 0)',
-  colorLocked: 'rgb(255, 255, 0)',
-  lineWidth: '1',
-  lineDash: '',
-  textBoxVisibility: true,
-  textBoxFontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif',
-  textBoxFontSize: '14px',
-  textBoxColor: 'rgb(255, 255, 0)',
-  textBoxColorHighlighted: 'rgb(0, 255, 0)',
-  textBoxColorSelected: 'rgb(0, 255, 0)',
-  textBoxColorLocked: 'rgb(255, 255, 0)',
-  textBoxBackground: '',
-  textBoxLinkLineWidth: '1',
-  textBoxLinkLineDash: '2,3',
+    colorHighlighted: 'rgb(0, 255, 0)',
+    colorSelected: 'rgb(0, 220, 0)',
+    colorLocked: 'rgb(209, 193, 90)',
+    lineWidth: '1',
+    lineDash: '',
+    shadow: true,
+    textBoxVisibility: true,
+    textBoxFontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif',
+    textBoxFontSize: '14px',
+    textBoxColor: 'rgb(255, 255, 0)',
+    textBoxMargin: '0',
+    textBoxBorderRadius: '0',
+    textBoxColorHighlighted: 'rgb(0, 255, 0)',
+    textBoxColorSelected: 'rgb(0, 255, 0)',
+    textBoxColorLocked: 'rgb(209, 193, 90)',
+    textBoxLinkLineWidth: '1',
+    textBoxLinkLineDash: '2,3',
+    textBoxShadow: true,
+    markerSize: '10',
+    angleArcLineDash: '',
 };
 ```
 
-但是，您可以调整上述每个参数以及我们接下来将讨论的其他样式。
+不过上面每一项参数、以及下面将要讨论的其他样式，都是可以调整的。
 
-## 设置样式
+## 设置样式 {#set-styles}
 
-样式层次结构的每个级别都有一组可设置的样式。样式如下。
+样式层级的每一级都有一组可设置的样式，如下。
 
-### 注释级别设置
+### 标注级设置 {#annotation-level-settings}
 
 ```js
-import { annotations } from '@cornerstonejs/tools';
+import { annotation } from '@cornerstonejs/tools';
 
-// 注释级别
+// 标注级
 const styles = {
   colorHighlighted: 'rgb(255, 255, 0)',
 };
 
-annotation.config.style.setAnnotationToolStyle(annotationUID, style);
+annotation.config.style.setAnnotationStyles(annotationUID, style);
 ```
 
-### 视口级别工具设置
+### 视口级工具设置 {#viewport-level-tool-settings}
 
 ```js
-// 视口级别
+import { annotation } from '@cornerstonejs/tools';
+
+// 视口级
 const styles = {
   LengthTool: {
     colorHighlighted: 'rgb(255, 255, 0)',
@@ -86,9 +108,11 @@ const styles = {
 annotation.config.style.setViewportToolStyle(viewportId, styles);
 ```
 
-### 工具组级别工具设置
+### 工具组级工具设置 {#toolgroup-level-tool-settings}
 
 ```js
+import { annotation } from '@cornerstonejs/tools';
+
 const styles = {
   LengthTool: {
     colorHighlighted: 'rgb(255, 255, 0)',
@@ -101,9 +125,11 @@ const styles = {
 annotation.config.style.setToolGroupToolStyles(toolGroupId, styles);
 ```
 
-### 全局（默认）级别工具设置
+### 全局（默认）级工具设置 {#globaldefault-level-tool-settings}
 
 ```js
+import { annotation } from '@cornerstonejs/tools';
+
 const styles = annotation.config.style.getDefaultToolStyle();
 
 const newStyles = {
@@ -118,9 +144,9 @@ const newStyles = {
 annotation.config.style.setDefaultToolStyle(deepMerge(styles, newStyles));
 ```
 
-### 可配置样式
+### 可配置的样式 {#configurable-styles}
 
-当前我们可以配置以下样式。
+目前可配置的样式有以下这些。
 
 ```js
 color;
@@ -183,6 +209,30 @@ textBoxColorPassive;
 textBoxColorSelected;
 textBoxColorSelectedActive;
 textBoxColorSelectedPassive;
+textBoxMargin;
+textBoxMarginActive;
+textBoxMarginHighlighted;
+textBoxMarginHighlightedActive;
+textBoxMarginHighlightedPassive;
+textBoxMarginLocked;
+textBoxMarginLockedActive;
+textBoxMarginLockedPassive;
+textBoxMarginPassive;
+textBoxMarginSelected;
+textBoxMarginSelectedActive;
+textBoxMarginSelectedPassive;
+textBoxBorderRadius;
+textBoxBorderRadiusActive;
+textBoxBorderRadiusHighlighted;
+textBoxBorderRadiusHighlightedActive;
+textBoxBorderRadiusHighlightedPassive;
+textBoxBorderRadiusLocked;
+textBoxBorderRadiusLockedActive;
+textBoxBorderRadiusLockedPassive;
+textBoxBorderRadiusPassive;
+textBoxBorderRadiusSelected;
+textBoxBorderRadiusSelectedActive;
+textBoxBorderRadiusSelectedPassive;
 textBoxFontFamily;
 textBoxFontFamilyActive;
 textBoxFontFamilyHighlighted;
@@ -231,4 +281,17 @@ textBoxLinkLineWidthPassive;
 textBoxLinkLineWidthSelected;
 textBoxLinkLineWidthSelectedActive;
 textBoxLinkLineWidthSelectedPassive;
+// 注意：textBoxLinkLineColor 未设置时会回退到对应的 textBoxColor
+textBoxLinkLineColor;
+textBoxLinkLineColorActive;
+textBoxLinkLineColorHighlighted;
+textBoxLinkLineColorHighlightedActive;
+textBoxLinkLineColorHighlightedPassive;
+textBoxLinkLineColorLocked;
+textBoxLinkLineColorLockedActive;
+textBoxLinkLineColorLockedPassive;
+textBoxLinkLineColorPassive;
+textBoxLinkLineColorSelected;
+textBoxLinkLineColorSelectedActive;
+textBoxLinkLineColorSelectedPassive;
 ```

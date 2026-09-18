@@ -1,18 +1,33 @@
+---
+id: basic-segmentation-tools
+title: 分割工具
+description: Cornerstone3D 入门教程：用笔刷工具绘制和编辑分割。讲解 createAndCacheDerivedLabelmapVolume 派生标签图体数据、addSegmentations 注册分割、addLabelmapRepresentationToViewportMap 在多个视口中渲染分割表示形式。
+keywords:
+  - Cornerstone3D 分割
+  - BrushTool
+  - createAndCacheDerivedLabelmapVolume
+  - addSegmentations
+  - 标签图
+  - Labelmap
+  - 分割表示形式
+upstream: https://www.cornerstonejs.org/docs/tutorials/basic-segmentation-tools
+---
+
 # 分割工具
 
-在本教程中，您将学习如何使用分割工具来绘制和编辑分割区域。
+本教程将演示如何使用分割工具绘制和编辑分割。
 
-## 前言
+## 前提 {#preface}
 
-为了渲染一个体积数据，我们需要：
+要完成本教程，我们需要：
 
-- 初始化Cornerstone和相关库。
-- 使用HTMLDivElements来渲染不同方向的体积（例如，一个用于轴向视图，一个用于矢状视图）。
-- 图像的路径（`imageId`）。
+- 初始化 cornerstone 及相关库
+- 若干个 HTMLDivElement，用来显示体数据的不同方位（例如一个轴位、一个矢状位）
+- 影像的路径（即 `imageId`）
 
-## 实现
+## 实现 {#implementation}
 
-**初始化Cornerstone和相关库**
+**初始化 cornerstone 及相关库**
 
 ```js
 import { init as coreInit } from '@cornerstonejs/core';
@@ -24,9 +39,9 @@ await dicomImageLoaderInit();
 await cornerstoneToolsInit();
 ```
 
-为了本教程的演示，我们已经将图像存储在服务器上。
+为了本教程的演示，我们已经把影像放在了服务器上。
 
-首先，让我们创建三个HTMLDivElements，并通过CSS样式设置它们来包含轴向、矢状和冠状视图的视口。
+先创建三个 HTMLDivElement 并设置样式，分别用于轴位、矢状位和冠状位视图。
 
 ```js
 const content = document.getElementById('content');
@@ -35,17 +50,17 @@ const viewportGrid = document.createElement('div');
 viewportGrid.style.display = 'flex';
 viewportGrid.style.flexDirection = 'row';
 
-// 轴向视图的元素
+// 轴位视图的元素
 const element1 = document.createElement('div');
 element1.style.width = '500px';
 element1.style.height = '500px';
 
-// 矢状视图的元素
+// 矢状位视图的元素
 const element2 = document.createElement('div');
 element2.style.width = '500px';
 element2.style.height = '500px';
 
-// 冠状视图的元素
+// 冠状位视图的元素
 const element3 = document.createElement('div');
 element3.style.width = '500px';
 element3.style.height = '500px';
@@ -57,24 +72,25 @@ viewportGrid.appendChild(element3);
 content.appendChild(viewportGrid);
 ```
 
-对于刷子工具，添加`BrushTool`。这两个工具应通过`addTool` API和`ToolGroup`添加到`Cornerstone3D`中：
+笔刷工具用的是 `BrushTool`。这些工具都需要通过 `addTool` API 加入 `Cornerstone3D`，
+再加入工具组：
 
 ```js
 addTool(BrushTool);
 ```
 
-对于工具组：
+工具组部分：
 
 ```js
 const toolGroupId = 'CT_TOOLGROUP';
-// 定义工具组，将分割显示工具添加到其中
+// 定义工具组，用于承载分割显示相关的工具
 const toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
 
 // 分割工具
 toolGroup.addTool(BrushTool.toolName);
 ```
 
-为了让刷子工具在按下鼠标左键时处于激活状态，设置`BrushTool`为活动工具：
+要让笔刷工具在按下鼠标左键时生效，把 `BrushTool` 设为 `Active（激活）`：
 
 ```js
 toolGroup.setToolActive(BrushTool.toolName, {
@@ -82,42 +98,43 @@ toolGroup.setToolActive(BrushTool.toolName, {
 });
 ```
 
-接下来，我们可以处理体积加载。首先，让我们加载用于渲染的实际CT体积数据。
+接下来处理体数据的加载。先加载我们打算用来渲染的那份 CT 体数据。
 
 ```js
 const volumeName = 'CT_VOLUME_ID';
 const volumeId = `${volumeName}`;
 
-// 在内存中定义CT体积
+// 在内存中为 CT 定义一份体数据
 const volume = await volumeLoader.createAndCacheVolume(volumeId, {
   imageIds,
 });
 ```
 
-我们需要另一个体积来进行分割（我们不希望修改CT体积来进行分割）。我们可以使用CT体积（`volumeId`）作为元数据的参考，来创建一个新的分割体积。
+分割还需要另一份体数据（我们不希望为了分割去改动 CT 体数据本身）。
+可以把 CT 体数据（`volumeId`）作为元数据参考，派生出一份新的体数据用于分割。
 
 ```js
 const segmentationId = 'MY_SEGMENTATION_ID';
 
-// 创建一个与CT体积源数据分辨率相同的分割体积
-await volumeLoader.createAndCacheDerivedLabelmapVolume(volumeId, {
+// 创建一份与 CT 源数据分辨率相同的分割
+volumeLoader.createAndCacheDerivedLabelmapVolume(volumeId, {
   volumeId: segmentationId,
 });
 ```
 
-然后，将创建的分割体积添加到`Cornerstone3DTools`的分割状态中。通过`addSegmentation` API实现：
+然后把创建好的分割加入 `Cornerstone3DTools` 的分割状态，这一步用 `addSegmentation` API 完成：
 
 ```js
-// 将分割添加到状态中。正如所见，标签图数据
-// 即缓存的volumeId，提供给状态
+// 把分割加入状态。可以看到，作为标签图数据的
+// 那个已缓存的 volumeId 被传进了状态里
 segmentation.addSegmentations([
   {
     segmentationId,
     representation: {
-      // 分割类型
+      // 分割的类型
       type: csToolsEnums.SegmentationRepresentations.Labelmap,
-      // 实际的分割数据，对于标签图来说，这是一
-      // 参考源体积数据的分割。
+      // 实际的分割数据。对标签图来说，这里是
+      // 指向该分割源体数据的引用。
       data: {
         volumeId: segmentationId,
       },
@@ -126,14 +143,17 @@ segmentation.addSegmentations([
 ]);
 ```
 
-:::note 重要
-创建并将分割添加到`Cornerstone3DTools`的分割状态中并不会立即在视口中渲染它。`Cornerstone3DTools`已将`Segmentation`与`Segmentation Representation`解耦。简而言之，`Segmentation`包含渲染不同`Segmentation Representation`（如`Labelmap`、`Contour`，后者尚不支持，详见路线图）所需的数据。因此，您可以拥有单一`Segmentation`的多个`representation`。更多信息，请参考本教程的末尾部分。
+:::note Important
+创建分割并把它加入 `Cornerstone3DTools` 的分割状态，并不等于把它渲染到视口上。
+`Cornerstone3DTools` 把 `分割` 与 `分割表示形式` 解耦了。简单来说，`分割` 持有渲染
+各种 `分割表示形式`（例如 `标签图`、`轮廓`——轮廓暂未支持，见路线图）所需的数据。
+所以同一份 `分割` 可以有多个 `表示形式`。本教程末尾有更多说明。
 :::
 
-让我们创建一个渲染引擎并添加视口，并让工具组知道它正在操作的视口：
+下面创建渲染引擎、添加视口，并把视口告知工具组：
 
 ```js
-// 实例化渲染引擎
+// 实例化一个渲染引擎
 const renderingEngineId = 'myRenderingEngine';
 const renderingEngine = new RenderingEngine(renderingEngineId);
 
@@ -176,20 +196,20 @@ toolGroup.addViewport(viewportId2, renderingEngineId);
 toolGroup.addViewport(viewportId3, renderingEngineId);
 ```
 
-接下来，设置体积并将其加载到视口中：
+开始加载体数据，并把它设置到视口上：
 
 ```js
-// 设置加载的体积
+// 开始加载体数据
 await volume.load();
 
-// 将体积设置到视口中
+// 把体数据设置到视口上
 await setVolumesForViewports(
   renderingEngine,
   [
     {
       volumeId,
       callback: ({ volumeActor }) => {
-        // 在volumeActor创建后设置windowLevel
+        // volumeActor 创建完成后再设置窗宽窗位
         volumeActor
           .getProperty()
           .getRGBTransferFunction(0)
@@ -201,7 +221,7 @@ await setVolumesForViewports(
 );
 ```
 
-最后，我们创建一个标签图表示的分割并将其添加到工具组中：
+最后，创建该分割的标签图表示形式并加入工具组：
 
 ```js
 await segmentation.addLabelmapRepresentationToViewportMap({
@@ -225,14 +245,14 @@ await segmentation.addLabelmapRepresentationToViewportMap({
   ],
 });
 
-// 渲染图像
+// 渲染影像
 renderingEngine.render();
 ```
 
-## 最终代码
+## 完整代码 {#final-code}
 
 <details>
-<summary>最终代码</summary>
+<summary>完整代码</summary>
 
 ```js
 import {
@@ -262,17 +282,17 @@ const viewportGrid = document.createElement('div');
 viewportGrid.style.display = 'flex';
 viewportGrid.style.flexDirection = 'row';
 
-// 轴向视图的元素
+// 轴位视图的元素
 const element1 = document.createElement('div');
 element1.style.width = '500px';
 element1.style.height = '500px';
 
-// 矢状视图的元素
+// 矢状位视图的元素
 const element2 = document.createElement('div');
 element2.style.width = '500px';
 element2.style.height = '500px';
 
-// 冠状视图的元素
+// 冠状位视图的元素
 const element3 = document.createElement('div');
 element3.style.width = '500px';
 element3.style.height = '500px';
@@ -285,7 +305,7 @@ content.appendChild(viewportGrid);
 // ============================= //
 
 /**
- * 运行示例
+ * 运行演示
  */
 async function run() {
   await coreInit();
@@ -296,34 +316,57 @@ async function run() {
     StudyInstanceUID:
       '1.3.6.1.4.1.14519.5.2.1.7009.2403.334240657131972136850343327463',
     SeriesInstanceUID:
-      '1.3.6.1.4.1.14519.5.2.1.
-
-7009.2403.179742323407226418032100354694',
-    skipSeriesWithNoFrames: false,
+      '1.3.6.1.4.1.14519.5.2.1.7009.2403.226151125820845824875394858561',
+    wadoRsRoot: 'https://d14fa38qiwhyfd.cloudfront.net/dicomweb',
   });
 
-  const volumeName = 'CT_VOLUME_ID';
-  const volumeId = `${volumeName}`;
-  const volume = await volumeLoader.createAndCacheVolume(volumeId, { imageIds });
+  // 实例化一个渲染引擎
+  const renderingEngineId = 'myRenderingEngine';
 
-  const segmentationId = 'MY_SEGMENTATION_ID';
-  await volumeLoader.createAndCacheDerivedLabelmapVolume(volumeId, {
-    volumeId: segmentationId,
-  });
-
-  // 工具组
-  const toolGroupId = 'CT_TOOLGROUP';
-  const toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
   addTool(BrushTool);
 
-  // 启用Brush Tool
+  const toolGroupId = 'CT_TOOLGROUP';
+  // 定义工具组，用于承载分割显示相关的工具
+  const toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
+
+  // 分割工具
+  toolGroup.addTool(BrushTool.toolName);
+
   toolGroup.setToolActive(BrushTool.toolName, {
     bindings: [{ mouseButton: csToolsEnums.MouseBindings.Primary }],
   });
 
-  const renderingEngineId = 'myRenderingEngine';
-  const renderingEngine = new RenderingEngine(renderingEngineId);
+  const volumeName = 'CT_VOLUME_ID';
+  const volumeId = `${volumeName}`;
 
+  // 在内存中为 CT 定义一份体数据
+  const volume = await volumeLoader.createAndCacheVolume(volumeId, {
+    imageIds,
+  });
+
+  const segmentationId = 'MY_SEGMENTATION_ID';
+
+  // 创建一份与 CT 源数据分辨率相同的分割
+  volumeLoader.createAndCacheDerivedLabelmapVolume(volumeId, {
+    volumeId: segmentationId,
+  });
+
+  segmentation.addSegmentations([
+    {
+      segmentationId,
+      representation: {
+        // 分割的类型
+        type: csToolsEnums.SegmentationRepresentations.Labelmap,
+        // 实际的分割数据。对标签图来说，这里是
+        // 指向该分割源体数据的引用。
+        data: {
+          volumeId: segmentationId,
+        },
+      },
+    },
+  ]);
+
+  // 创建视口
   const viewportId1 = 'CT_AXIAL';
   const viewportId2 = 'CT_SAGITTAL';
   const viewportId3 = 'CT_CORONAL';
@@ -333,36 +376,46 @@ async function run() {
       viewportId: viewportId1,
       type: ViewportType.ORTHOGRAPHIC,
       element: element1,
-      defaultOptions: { orientation: Enums.OrientationAxis.AXIAL },
+      defaultOptions: {
+        orientation: Enums.OrientationAxis.AXIAL,
+      },
     },
     {
       viewportId: viewportId2,
       type: ViewportType.ORTHOGRAPHIC,
       element: element2,
-      defaultOptions: { orientation: Enums.OrientationAxis.SAGITTAL },
+      defaultOptions: {
+        orientation: Enums.OrientationAxis.SAGITTAL,
+      },
     },
     {
       viewportId: viewportId3,
       type: ViewportType.ORTHOGRAPHIC,
       element: element3,
-      defaultOptions: { orientation: Enums.OrientationAxis.CORONAL },
+      defaultOptions: {
+        orientation: Enums.OrientationAxis.CORONAL,
+      },
     },
   ];
 
+  const renderingEngine = new RenderingEngine(renderingEngineId);
   renderingEngine.setViewports(viewportInputArray);
 
   toolGroup.addViewport(viewportId1, renderingEngineId);
   toolGroup.addViewport(viewportId2, renderingEngineId);
   toolGroup.addViewport(viewportId3, renderingEngineId);
 
+  // 开始加载体数据
   await volume.load();
 
+  // 把体数据设置到视口上
   await setVolumesForViewports(
     renderingEngine,
     [
       {
         volumeId,
         callback: ({ volumeActor }) => {
+          // volumeActor 创建完成后再设置窗宽窗位
           volumeActor
             .getProperty()
             .getRGBTransferFunction(0)
@@ -394,6 +447,7 @@ async function run() {
     ],
   });
 
+  // 渲染影像
   renderingEngine.render();
 }
 
@@ -401,3 +455,21 @@ run();
 ```
 
 </details>
+
+现在你应该可以用笔刷工具绘制分割了。
+
+![](../assets/basic-segmentation-tools.png)
+
+## 延伸阅读 {#read-more}
+
+进一步了解：
+
+- [分割](../1-concepts/cornerstone-tools/segmentation/index.md)
+- [分割工具](../1-concepts/cornerstone-tools/segmentation/segmentation-tools.md)
+
+:::note 提示
+
+- 到[示例](./examples.md#run-examples-locally)页面了解如何在本地运行这些示例。
+- 调试示例的方法见[源码与调试](./examples.md#source-code-and-debugging)一节。
+
+:::

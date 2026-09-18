@@ -1,35 +1,46 @@
 ---
 id: requestPoolManager
-name: 请求池管理器
+title: 请求池管理器
+description: 请求池管理器把影像的获取与解码拆分为 imageRetrievalPoolManager 和 imageLoadPoolManager 两个独立队列，各自可配置最大并发数并异步执行，避免解码耗时阻塞新的获取请求。本文说明两个队列的配置、在自定义加载器中的用法，以及请求重排序。
+keywords:
+  - 请求池管理器
+  - imageLoadPoolManager
+  - imageRetrievalPoolManager
+  - maxNumRequests
+  - RequestType
+  - 请求重排序
+  - 并发请求
+upstream: https://www.cornerstonejs.org/docs/concepts/cornerstone-core/requestPoolManager
 ---
 
-# 请求池管理器
+# 请求池管理器 {#requestpool-manager}
 
-RequestPool 管理器经过广泛修改，提供了两个新功能：1)“异步图像检索和解码”2)“请求重新排序”。
+请求池管理器经过了大幅重构，带来两项新能力：
+1）`影像的异步获取与解码`；2）`请求重排序`。
 
-## 图像加载和图像检索提示
+## ImageLoad 与 ImageRetrieval 两个队列 {#imageload-and-imageretrieval-queues}
 
-以前，只有一个加载队列用于获取和解码图像。
-一旦图像解码完成，就发起新的请求。这有一个限制
-用于解码时所需的时间；因此，不会发送新的检索（获取）请求，
-即使根据配置的最大请求数允许其他请求。
+以前，获取和解码影像共用一个加载队列。只有当影像解码完成之后，
+才会发起新的请求。这在解码比较耗时的场景下形成了一个约束：
+即使按配置的最大请求数还允许发出更多请求，也不会有新的获取（fetch）请求被发出。
 
-为了克服这个限制，为此创建了两个不同的队列
-目的：`imageRetrievalPoolManager`和`imageLoadPoolManager`，每个都有自己可配置的最大并发数
-工作机会。它们彼此分离并异步执行，从而允许
-每个检索请求在请求触发槽可用时立即启动。
+为了突破这个限制，我们为此创建了两个彼此独立的队列：
+`imageRetrievalPoolManager` 和 `imageLoadPoolManager`，
+各自拥有可配置的最大并发任务数。它们相互分离、异步执行，
+这样只要有请求发射位空出来，每个获取请求就能立刻被发起。
 
-默认启用分割图像检索请求和解码“Cornerstone-wado-image-loader”版本“v4.0.0-rc”或更高版本。
+把影像获取请求与解码拆开这一行为，在 `Cornerstone-wado-image-loader`
+`v4.0.0-rc` 及以上版本中默认启用。
 
 ```js
-// Loading = Retrieval + Decoding
+// 加载 = 获取 + 解码
 imageLoadPoolManager.maxNumRequests = {
   interaction: 1000,
   thumbnail: 1000,
   prefetch: 1000,
 };
 
-// Retrieval (usually) === XHR requests
+// 获取（通常）=== XHR 请求
 imageRetrievalPoolManager.maxNumRequests = {
   interaction: 20,
   thumbnail: 20,
@@ -37,10 +48,11 @@ imageRetrievalPoolManager.maxNumRequests = {
 };
 ```
 
-### 使用
+### 用法 {#usage}
 
-在您的自定义“imageLoader”或“volumeLoader”中，正确使用
-在基石内部的 poolManagers 中，您需要定义一个 `sendRequest` 函数来发出加载图像请求。
+在你自定义的 `imageLoader` 或 `volumeLoader` 中，
+要正确使用 cornerstone 内部的这些池管理器，需要定义一个 `sendRequest` 函数
+来发起加载影像的请求。
 
 ```js
 import {
@@ -52,7 +64,7 @@ import {
 function sendRequest(imageId, imageIdIndex, options) {
   return loadAndCacheImage(imageId, options).then(
     (image) => {
-      // render
+      // 渲染
       successCallback.call(this, image, imageIdIndex, imageId);
     },
     (error) => {
@@ -81,9 +93,9 @@ imageLoadPoolManager.addRequest(
 );
 ```
 
-## 请求重新订购
+## 请求重排序 {#requests-re-ordering}
 
-您可以记住检索图像的特定顺序。例如，
-假设您要从中间切片到顶部和底部加载一个体积。
-我们在“cornerstoneStreamingImageVolumeLoader”中实现了这样的选项。
-您可以在[重新排序请求](../streaming-image-volume/re-order) 部分阅读更多相关信息。
+你可能对影像的获取顺序有特定要求。例如希望从中间那张切片开始、
+向上下两端加载一份体数据。这个选项我们已经在
+`cornerstoneStreamingImageVolumeLoader` 中实现了，
+详见[请求重排序](../streaming-image-volume/re-order.md)一节。

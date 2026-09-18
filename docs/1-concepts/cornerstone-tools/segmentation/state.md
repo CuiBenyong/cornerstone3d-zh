@@ -1,19 +1,37 @@
 ---
 id: state
 title: 状态
+description: SegmentationState 保存库中全部分割与分割表示形式的当前状态。2.x 起分割与其表示形式解耦，并从「按工具组划分」改为「按视口划分」。本文说明 colorLUT、分割对象的完整字段、把分割加入状态的方式，以及为视口添加各类表示形式的方法。
+keywords:
+  - SegmentationState
+  - colorLUT
+  - addSegmentations
+  - addSegmentationRepresentations
+  - addLabelmapRepresentationToViewport
+  - representationData
+upstream: https://www.cornerstonejs.org/docs/concepts/cornerstone-tools/segmentation/state
 ---
 
-# 状态
+# 状态 {#state}
 
-`SegmentationState` 存储了关于库中 `Segmentation` 和 `SegmentationRepresentation` 当前状态的所有信息。在 2.x 版本中，我们将 `Segmentation` 从其表示中解耦，并使系统具备视口特定性，而不是工具组特定性。从一个 `Segmentation`，可以创建各种表示（目前支持 Labelmap、Contour 和 Surface）。
+`SegmentationState` 保存了库中全部**分割**与**分割表示形式**当前状态的相关信息。
+在 2.x 版本中，我们把**分割**与它们的表示形式解耦了，
+并把这套体系从「按工具组划分」改为「按视口划分」。
+从一份**分割**可以创建出多种表示形式（目前支持标签图、轮廓和曲面）。
 
-## ColorLUT
+## ColorLUT {#colorlut}
 
-`SegmentationState` 存储用于渲染分割表示的 `colorLUT` 数组。`Cornerstone3DTools` 最初将 255 种颜色（`[[0,0,0,0], [221, 84, 84, 255], [77, 228, 121, 255], ...]`）添加为该数组的第一个索引。默认情况下，所有分割表示都使用第一个 colorLUT。但是，使用配置中的颜色 API，您可以将更多颜色添加到全局 colorLUT 和/或更改特定视口中特定分割表示的 colorLUT。
+`SegmentationState` 保存了一个 `colorLUT` 数组，用于渲染分割表示形式。
+`Cornerstone3DTools` 初始会把 255 种颜色
+（`[[0,0,0,0], [221, 84, 84, 255], [77, 228, 121, 255], ...]`）
+作为这个数组的第一项加入。默认情况下，所有分割表示形式都使用第一个 colorLUT。
+不过通过配置中的颜色 API，你可以向全局 colorLUT 添加更多颜色，
+和 / 或为特定视口中的特定分割表示形式更换 colorLUT。
 
-## Segmentations
+## 分割 {#segmentations}
 
-`SegmentationState` 将所有分段存储在一个数组中。每个 Segmentation 对象存储了创建 `SegmentationRepresentation` 所需的信息。
+`SegmentationState` 把所有分割保存在一个数组里。每个分割对象都保存了
+创建**分割表示形式**所需的信息。
 
 每个分割对象具有以下属性：
 
@@ -51,14 +69,18 @@ title: 状态
 }
 ```
 
-- `segmentationId`：消费者提供的必填字段。这是分割的唯一标识符。
-- `label`：分割的标签。
-- `segments`：包含每个分段信息的对象，包括其标签、激活状态、锁定状态和缓存统计。
-- `representationData`：**最重要的部分**，这是存储每种 `SegmentationRepresentation` 创建数据的地方。例如，在 `Labelmap` 表示中，所需的信息是一个缓存的 `volumeId`。
+- `segmentationId`：必填字段，由使用方提供。这是该分割的唯一标识。
+- `label`：该分割的标签。
+- `segments`：一个对象，包含每个分段的信息，
+  包括它的标签、活动状态、加锁状态和已缓存的统计量。
+- `representationData`：**最重要的部分**。创建每一种**分割表示形式**
+  所需的数据就存放在这里。例如在**标签图**表示形式中，
+  所需的信息是一个已缓存的 `volumeId`。
 
-### 将分割添加到状态
+### 把分割加入状态 {#adding-segmentations-to-the-state}
 
-由于 `Segmentation` 和 `SegmentationRepresentation` 是分开的，首先我们需要使用顶级 API 将 `segmentation` 添加到状态中：
+由于**分割**与**分割表示形式**是分开的，我们首先需要用顶层 API
+把**分割**加入状态：
 
 ```js
 import { segmentation, Enums } from '@cornerstonejs/tools';
@@ -69,22 +91,24 @@ segmentation.addSegmentations([
     representation: {
       type: Enums.SegmentationRepresentations.Labelmap,
       data: {
-        imageIds: segmentationImageIds
-      }
-    }
-  }
+        imageIds: segmentationImageIds,
+      },
+    },
+  },
 ]);
 ```
 
-:::note 重要
-将 `Segmentation` 添加到状态不会渲染分割。您需要将 `SegmentationRepresentation` 添加到特定的视口中以进行渲染。
+:::note Important
+把一份**分割**加入状态**不会**渲染它。你还需要把**分割表示形式**
+添加到你希望渲染它的那些具体视口上。
 :::
 
-## 视口
+## 视口 {#viewports}
 
-### 向视口添加 SegmentationRepresentation
+### 为视口添加分割表示形式 {#adding-a-segmentationrepresentation-to-a-viewport}
 
-要渲染分割，您需要将其表示添加到特定的视口中。这可以使用 `addSegmentationRepresentation` 方法完成：
+要渲染一份分割，需要把它的表示形式添加到具体的视口上。
+这可以通过 `addSegmentationRepresentation` 方法完成：
 
 ```js
 import { segmentation, Enums } from '@cornerstonejs/tools';
@@ -92,17 +116,17 @@ import { segmentation, Enums } from '@cornerstonejs/tools';
 await segmentation.addSegmentationRepresentations(viewportId, [
   {
     segmentationId,
-    type: Enums.SegmentationRepresentations.Labelmap
-  }
+    type: Enums.SegmentationRepresentations.Labelmap,
+  },
 ]);
 ```
 
-### 特定表示方法
+### 各表示形式专用的方法 {#representation-specific-methods}
 
-Cornerstone3D v2 提供了专门的方法来添加不同类型的分割表示：
+Cornerstone3D v2 为添加不同类型的分割表示形式提供了专用方法：
 
 ```js
-// 添加 labelmap 表示
+// 添加标签图表示形式
 await segmentation.addLabelmapRepresentationToViewport(viewportId, [
   {
     segmentationId,
@@ -110,7 +134,7 @@ await segmentation.addLabelmapRepresentationToViewport(viewportId, [
   }
 ]);
 
-// 添加轮廓表示
+// 添加轮廓表示形式
 await segmentation.addContourRepresentationToViewport(viewportId, [
   {
     segmentationId,
@@ -118,7 +142,7 @@ await segmentation.addContourRepresentationToViewport(viewportId, [
   }
 ]);
 
-// 添加表面表示
+// 添加曲面表示形式
 await segmentation.addSurfaceRepresentationToViewport(viewportId, [
   {
     segmentationId,
@@ -127,24 +151,32 @@ await segmentation.addSurfaceRepresentationToViewport(viewportId, [
 ]);
 ```
 
-### 多视口操作
+:::note 与原文的一处差异
 
-您还可以使用视口映射方法同时向多个视口添加表示：
+官方英文原文最后那段「添加曲面表示形式」的示例代码少了一个右花括号，
+直接复制会导致语法错误。上面的代码已补齐，其余内容与原文一致。
+
+:::
+
+### 同时操作多个视口 {#multiple-viewport-operations}
+
+也可以用带视口映射的方法，同时把表示形式添加到多个视口：
 
 ```js
 const viewportInputMap = {
   viewport1: [
     {
       segmentationId: 'seg1',
-      type: Enums.SegmentationRepresentations.Labelmap
-    }
+      type: Enums.SegmentationRepresentations.Labelmap,
+    },
   ],
   viewport2: [
     {
       segmentationId: 'seg1',
-      type: Enums.SegmentationRepresentations.Labelmap
-    }
-  ]
+      type: Enums.SegmentationRepresentations.Labelmap,
+    },
+  ],
 };
 
 await segmentation.addLabelmapRepresentationToViewportMap(viewportInputMap);
+```

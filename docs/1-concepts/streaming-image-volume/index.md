@@ -1,9 +1,16 @@
 ---
 id: index
-title: 流式图像体积
+title: 流式影像体数据
+description: Cornerstone3D 新增了一个体数据加载器，实现了把体数据渐进式加载到 GPU。本节介绍它的工作方式。
+keywords:
+  - 流式影像体数据
+  - StreamingImageVolume
+  - 渐进式加载
+  - GPU
+upstream: https://www.cornerstonejs.org/docs/concepts/streaming-image-volume/
 ---
 
+# 流式影像体数据 {#streaming-imagevolume}
 
-# Streaming ImageVolume
-
-我们添加了一个新的体积加载器，它实现了向 GPU 的渐进加载体积。您可以在本节中阅读更多内容。
+我们新增了一个体数据加载器，它实现了把体数据渐进式加载到 GPU。
+本节会详细介绍它。

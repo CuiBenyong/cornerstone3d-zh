@@ -1,20 +1,34 @@
-# 渲染视频
+---
+id: basic-video
+title: 渲染视频影像
+description: Cornerstone3D 入门教程：使用视频视口渲染 MP4 影像并支持标注。讲解 ViewportType.VIDEO 的创建方式、setVideoURL 与 play 的用法、对服务端字节范围请求与 fast start 编码的要求，以及视频标注的帧范围机制。
+keywords:
+  - Cornerstone3D 视频
+  - ViewportType.VIDEO
+  - setVideoURL
+  - 视频标注
+  - AnnotationMultiSelect
+  - 超声影像
+upstream: https://www.cornerstonejs.org/docs/tutorials/basic-video
+---
 
-在本教程中，您将学习如何渲染视频。
+# 渲染视频影像
 
-## 前言
+本教程将演示如何渲染视频影像。
 
-为了渲染视频，我们需要：
+## 前提 {#preface}
 
-- 初始化cornerstone和相关库。
-- 一个`element`（HTMLDivElement）作为视口的容器。
-- 视频的URL。
-- 一个支持通过字节范围请求提供MP4格式视频的服务器。
-- 最好使用“快速启动”格式的视频。
+要渲染视频，我们需要：
 
-## 实现
+- 初始化 cornerstone 及相关库
+- 一个 `element`（HTMLDivElement）作为视口的容器
+- 视频的 URL
+- 一台能以 MP4 格式、并支持字节范围请求（byte range requests）提供该视频的服务器
+- 视频最好是 fast start 格式
 
-**初始化cornerstone和相关库**
+## 实现 {#implementation}
+
+**初始化 cornerstone 及相关库**
 
 ```js
 import { init as coreInit } from '@cornerstonejs/core';
@@ -22,11 +36,11 @@ import { init as coreInit } from '@cornerstonejs/core';
 await coreInit();
 ```
 
-**创建HTML元素**
+**创建 HTML 元素**
 
-为了本教程的目的，我们已经将图像存储在服务器上。
+为了本教程的演示，我们已经把影像放在了服务器上。
 
-首先创建一个HTML元素，并为它设置样式，使其看起来像一个视口。
+先创建一个 HTML 元素，并把它的样式设置成视口的样子。
 
 ```js
 const content = document.getElementById('content');
@@ -38,14 +52,15 @@ element.style.height = '500px';
 content.appendChild(element);
 ```
 
-接下来，我们需要一个`renderingEngine`和一个视口来渲染图像。
+接下来需要一个 `renderingEngine` 和一个 `viewport` 来渲染影像。
 
 ```js
 const renderingEngineId = 'myRenderingEngine';
 const renderingEngine = new RenderingEngine(renderingEngineId);
 ```
 
-然后，我们可以通过使用`enableElement` API在`renderingEngine`中创建一个视口。请注意，由于我们要渲染视频，我们必须指定`ViewportType.VIDEO`。
+然后用 `enableElement` API 在渲染引擎里创建一个 `viewport`。
+注意，因为要渲染的是视频，所以必须指定 `ViewportType.VIDEO`。
 
 ```js
 const viewportId = 'CT_AXIAL_STACK';
@@ -59,32 +74,34 @@ const viewportInput = {
 renderingEngine.enableElement(viewportInput);
 ```
 
-RenderingEngine将处理视口的创建，我们可以获取视口对象并设置视频URL，然后选择要显示的图像索引。
+视口的创建由渲染引擎负责。我们可以取到视口对象，把视频 URL 设置到它上面，
+并指定要显示第几帧。
 
 ```js
 const viewport = renderingEngine.getViewport(viewportId);
 
 await viewport.setVideoURL(
-  'https://ohif-assets.s3.us-east-2.amazonaws.com/video/rendered.mp4'
+  'https://ohif-assets-new.s3.us-east-1.amazonaws.com/video/rendered.mp4'
 );
 
 await viewport.play();
 ```
 
 :::note 提示
-对于合规的DICOMweb服务器，视频将通过rendered端点提供。
-如果视频是MPEG2格式，可能需要一个accept头来强制它以MP4格式提供。
-它可能不支持快速启动编码或字节范围格式，如果没有这些格式，将无法在大型视频中进行快速跳转。小视频可能会被完全缓冲，因此仍然可以跳转。
+对于符合规范的 DICOMweb 服务器，视频会在 rendered 端点上提供。
+如果原始格式是 MPEG2，可能需要指定 accept 头来强制它以 MP4 格式返回。
+服务器也可能既不支持 fast start 编码、也不支持字节范围格式——缺少这两项会导致
+无法在大体积视频里跳转。小体积视频通常会被整体缓冲下来，所以仍然可以跳转。
 
-例如，您可以查看OHIF中的这个例子，它使用了rendered端点：
+举个例子，可以看 OHIF 中这个使用 rendered 端点的示例：
 `https://d33do7qe4w26qo.cloudfront.net/dicomweb/studies/2.25.96975534054447904995905761963464388233/series/2.25.15054212212536476297201250326674987992/instances/2.25.179478223177027022014772769075050874231/rendered`
 
 :::
 
-## 完整代码
+## 完整代码 {#final-code}
 
 <details>
-<summary>查看完整代码</summary>
+<summary>完整代码</summary>
 
 ```js
 import { init as coreInit, RenderingEngine, Enums } from '@cornerstonejs/core';
@@ -106,7 +123,7 @@ content.appendChild(element);
 async function run() {
   await coreInit();
 
-  // 实例化渲染引擎
+  // 实例化一个渲染引擎
   const renderingEngineId = 'myRenderingEngine';
   const renderingEngine = new RenderingEngine(renderingEngineId);
 
@@ -123,7 +140,7 @@ async function run() {
   const viewport = renderingEngine.getViewport(viewportId);
 
   await viewport.setVideoURL(
-    'https://ohif-assets.s3.us-east-2.amazonaws.com/video/rendered.mp4'
+    'https://ohif-assets-new.s3.us-east-1.amazonaws.com/video/rendered.mp4'
   );
 
   await viewport.play();
@@ -136,15 +153,19 @@ run();
 
 :::note 提示
 
-- 访问[示例](https://www.cornerstonejs.org/docs/examples#run-examples-locally)页面以查看如何在本地运行示例。
-- 检查如何调试示例，请参阅[调试](https://www.cornerstonejs.org/docs/examples#debugging)部分。
+- 到[示例](./examples.md#run-examples-locally)页面了解如何在本地运行这些示例。
+- 调试示例的方法见[源码与调试](./examples.md#source-code-and-debugging)一节。
 
 :::
 
-# 视频注释
+## 视频标注 {#video-annotations}
 
-如果视频视口是通过图像ID和关联元数据的`setVideo`调用实例化的，那么可以使用注释与视频视口一起使用。这些注释将显示在一个或多个帧的范围内，允许一定的时间范围，以便注释可以实际显示。
+如果视频视口是通过对某个带有关联元数据的 imageId 调用 setVideo 来初始化的，
+那么就可以在视频视口上使用标注。这些标注会显示在某一段帧范围或某一帧上，
+并允许一定的时间范围，以保证标注确实能被看到。
 
-`annotationFrameRange`类支持在注释上设置和获取时间范围。这是通过修改`/frames/<number>`部分中的imageID或`frameNumber=<number>`属性来完成的。当注释适用于一个范围的值时，它们就成为一个范围。
+`AnnotationMultiSelect` 类支持读写标注上的时间范围。具体做法是修改 imageId 中
+`/frames/<number>` 那一段或 `frameNumber=<number>` 属性。当标注适用于一段范围的取值时，
+它们就变成一个范围。
 
-当视频播放时，帧范围会自动设置为当前播放的范围；当视频不播放时，它会设置为当前显示的帧编号。
+帧范围在创建时会自动设置：视频正在播放时取当前播放的范围，未播放时取当前显示的帧号。

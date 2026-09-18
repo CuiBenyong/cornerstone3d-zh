@@ -1,18 +1,32 @@
-# 注释工具
+---
+id: basic-annotation-tool
+title: 标注工具
+description: Cornerstone3D 入门教程：在体数据视口上使用标注工具进行测量。讲解 addTool 注册 BidirectionalTool、创建工具组并关联多个视口、绑定鼠标按键，以及在 setVolumesForViewports 的回调中设置窗宽窗位。
+keywords:
+  - Cornerstone3D 标注工具
+  - BidirectionalTool
+  - 影像测量
+  - setVolumesForViewports
+  - ToolGroup
+  - 双向测量工具
+upstream: https://www.cornerstonejs.org/docs/tutorials/basic-annotation-tool
+---
 
-在本教程中，您将学习如何使用注释工具进行标注。
+# 标注工具
 
-## 前言
+本教程将演示如何使用标注工具进行标注。
 
-为了渲染一个体积数据，我们需要：
+## 前提 {#preface}
 
-- 初始化cornerstone和相关库。
-- HTMLDivElements 用于渲染体积的不同方向（例如，Axial视图和Sagittal视图）。
-- 图像路径（`imageId`）。
+要完成本教程，我们需要：
 
-## 实现
+- 初始化 cornerstone 及相关库
+- 若干个 HTMLDivElement，用来显示体数据的不同方位（例如一个轴位、一个矢状位）
+- 影像的路径（即 `imageId`）
 
-**初始化cornerstone和相关库**
+## 实现 {#implementation}
+
+**初始化 cornerstone 及相关库**
 
 ```js
 import { init as coreInit } from '@cornerstonejs/core';
@@ -24,19 +38,19 @@ await dicomImageLoaderInit();
 await cornerstoneToolsInit();
 ```
 
-我们已经在服务器上存储了图像，供本教程使用。
+为了本教程的演示，我们已经把影像放在了服务器上。
 
-首先，创建两个HTMLDivElements并为其设置样式，用于包含视口。
+先创建两个 HTMLDivElement，并设置样式让它们容纳视口。
 
 ```js
 const content = document.getElementById('content');
 
-// 用于轴向视图的元素
+// 轴位视图的元素
 const element1 = document.createElement('div');
 element1.style.width = '500px';
 element1.style.height = '500px';
 
-// 用于矢状面视图的元素
+// 矢状位视图的元素
 const element2 = document.createElement('div');
 element2.style.width = '500px';
 element2.style.height = '500px';
@@ -45,21 +59,21 @@ content.appendChild(element1);
 content.appendChild(element2);
 ```
 
-接下来，我们需要一个`renderingEngine`。
+接下来需要一个 `renderingEngine`。
 
 ```js
 const renderingEngineId = 'myRenderingEngine';
 const renderingEngine = new RenderingEngine(renderingEngineId);
 ```
 
-通过使用`volumeLoader` API加载体积数据。
+加载体数据通过 `volumeLoader` API 完成。
 
 ```js
-// 在内存中定义一个体积
+// 在内存中定义一份体数据
 const volume = await volumeLoader.createAndCacheVolume(volumeId, { imageIds });
 ```
 
-然后，我们可以通过使用`setViewports` API在渲染引擎中创建`viewport`。
+然后用 `setViewports` API 在渲染引擎里创建多个 `viewport`。
 
 ```js
 const viewportId1 = 'CT_AXIAL';
@@ -89,19 +103,20 @@ renderingEngine.setViewports(viewportInput);
 await volume.load();
 ```
 
-为了使用工具，需要通过`addTool` API将其添加到`Cornerstone3DTools`的内部状态中。
+要使用工具，需要先通过 `addTool` API 把它们加入 `Cornerstone3DTools` 的内部状态。
 
 ```js
 addTool(BidirectionalTool);
 ```
 
-接下来，创建一个ToolGroup并添加我们想要使用的工具。ToolGroup使得可以在多个视口之间共享工具，因此我们还需要告诉ToolGroup它应该作用于哪些视口。
+接着创建一个工具组，把想用的工具加进去。工具组让多个视口可以共享同一批工具，
+所以还需要告诉工具组它应该作用在哪些视口上。
 
 ```js
 const toolGroupId = 'myToolGroup';
 const toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
 
-// 将工具添加到ToolGroup
+// 把工具加入工具组
 toolGroup.addTool(BidirectionalTool.toolName);
 
 toolGroup.addViewport(viewportId1, renderingEngineId);
@@ -110,24 +125,23 @@ toolGroup.addViewport(viewportId2, renderingEngineId);
 
 :::note 提示
 
-为什么要将`renderingEngineUID`添加到ToolGroup中？因为`viewportId`在每个渲染引擎内是唯一的。
+为什么要把 renderingEngineId 也传给工具组？因为 viewportId 只在单个渲染引擎内唯一。
 
 :::
 
-接下来，设置工具为活动状态，这意味着我们还需要为工具定义绑定（哪个鼠标按钮使其激活）。
+然后把工具设为 `Active（激活）`，这意味着还要为它定义绑定——也就是按哪个鼠标键时它生效。
 
 ```js
-// 设置BidirectionalTool为活动工具，左键点击时激活
 toolGroup.setToolActive(BidirectionalTool.toolName, {
   bindings: [
     {
-      mouseButton: csToolsEnums.MouseBindings.Primary, // 左键点击
+      mouseButton: csToolsEnums.MouseBindings.Primary, // 左键
     },
   ],
 });
 ```
 
-加载体积数据并设置视口以渲染体积数据。
+最后加载体数据，并让视口显示它。
 
 ```js
 setVolumesForViewports(
@@ -136,7 +150,7 @@ setVolumesForViewports(
     {
       volumeId,
       callback: ({ volumeActor }) => {
-        // 在volumeActor创建后设置windowLevel
+        // volumeActor 创建完成后再设置窗宽窗位
         volumeActor
           .getProperty()
           .getRGBTransferFunction(0)
@@ -147,11 +161,11 @@ setVolumesForViewports(
   [viewportId1, viewportId2]
 );
 
-// 渲染图像
+// 渲染影像
 renderingEngine.renderViewports([viewportId1, viewportId2]);
 ```
 
-## 完整代码
+## 完整代码 {#final-code}
 
 <details>
 <summary>完整代码</summary>
@@ -180,12 +194,12 @@ const { ViewportType } = Enums;
 
 const content = document.getElementById('content');
 
-// 用于轴向视图的元素
+// 轴位视图的元素
 const element1 = document.createElement('div');
 element1.style.width = '500px';
 element1.style.height = '500px';
 
-// 用于矢状面视图的元素
+// 矢状位视图的元素
 const element2 = document.createElement('div');
 element2.style.width = '500px';
 element2.style.height = '500px';
@@ -195,7 +209,7 @@ content.appendChild(element2);
 // ============================= //
 
 /**
- * 运行示例
+ * 运行演示
  */
 async function run() {
   await coreInit();
@@ -210,7 +224,7 @@ async function run() {
     wadoRsRoot: 'https://d14fa38qiwhyfd.cloudfront.net/dicomweb',
   });
 
-  // 实例化渲染引擎
+  // 实例化一个渲染引擎
   const renderingEngineId = 'myRenderingEngine';
   const volumeId = 'myVolume';
   const renderingEngine = new RenderingEngine(renderingEngineId);
@@ -248,7 +262,7 @@ async function run() {
   const toolGroupId = 'myToolGroup';
   const toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
 
-  // 将工具添加到ToolGroup
+  // 把工具加入工具组
   toolGroup.addTool(BidirectionalTool.toolName);
 
   toolGroup.addViewport(viewportId1, renderingEngineId);
@@ -257,7 +271,7 @@ async function run() {
   toolGroup.setToolActive(BidirectionalTool.toolName, {
     bindings: [
       {
-        mouseButton: csToolsEnums.MouseBindings.Primary, // 左键点击
+        mouseButton: csToolsEnums.MouseBindings.Primary, // 左键
       },
     ],
   });
@@ -268,7 +282,7 @@ async function run() {
       {
         volumeId,
         callback: ({ volumeActor }) => {
-          // 在volumeActor创建后设置windowLevel
+          // volumeActor 创建完成后再设置窗宽窗位
           volumeActor
             .getProperty()
             .getRGBTransferFunction(0)
@@ -279,7 +293,7 @@ async function run() {
     [viewportId1, viewportId2]
   );
 
-  // 渲染图像
+  // 渲染影像
   renderingEngine.renderViewports([viewportId1, viewportId2]);
 }
 
@@ -288,22 +302,24 @@ run();
 
 </details>
 
-您应该能够使用添加的工具对图像进行标注。
+现在你应该可以用添加的工具在影像上做标注了。
 
 ![](../assets/tutorial-annotation.png)
 
-## 阅读更多
+## 延伸阅读 {#read-more}
 
-了解更多内容：
+进一步了解：
 
-- [ToolGroup](../1-concepts/cornerstone-tools/toolGroups.md)
-- [注释](../1-concepts/cornerstone-tools/annotation/index.md)
+- [工具组（ToolGroup）](../1-concepts/cornerstone-tools/toolGroups.md)
+- [标注](../1-concepts/cornerstone-tools/annotation/index.md)
 
-要了解更高级的注释工具用法，请访问<a href="/live-examples/volumeAnnotationTools.html" target="_blank">Volume Annotation Tools</a>示例页面。
+标注工具的进阶用法，请访问
+<a href="https://www.cornerstonejs.org/live-examples/volumeAnnotationTools.html" target="_blank">Volume Annotation Tools</a>
+示例页面。
 
 :::note 提示
 
-- 访问[示例](https://www.cornerstonejs.org/docs/examples#run-examples-locally)页面，了解如何在本地运行示例。
-- 查看[调试](https://www.cornerstonejs.org/docs/examples#debugging)部分，了解如何调试示例。
+- 到[示例](./examples.md#run-examples-locally)页面了解如何在本地运行这些示例。
+- 调试示例的方法见[源码与调试](./examples.md#source-code-and-debugging)一节。
 
 :::

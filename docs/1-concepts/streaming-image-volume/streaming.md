@@ -1,35 +1,57 @@
 ---
 id: streaming
-title: 体数据的流媒体传输
+title: 体数据的流式加载
+description: StreamingImageVolume 是面向体数据的渐进式加载器。它先预取全部影像的元数据，从而可以预分配并缓存体数据、并在二维影像陆续到达时边加载边渲染。本文说明这一设计、体数据与影像之间的互转、createAndCacheVolume 的用法，以及不预取元数据这一替代方案的利弊。
+keywords:
+  - 体数据流式加载
+  - StreamingImageVolume
+  - createAndCacheVolume
+  - 预取元数据
+  - skipCreateImage
+  - convertToCornerstoneImage
+upstream: https://www.cornerstonejs.org/docs/concepts/streaming-image-volume/streaming
 ---
 
-# 体数据的流媒体传输
+# 体数据的流式加载 {#streaming-of-volume-data}
 
-随着[`体积`](../cornerstone-core/volumes.md)加入`Cornerstone3D`，我们正在添加和维护`Streaming-volume-image-loader`，
-这是一个逐步加载体积的加载器。此加载器旨在接受图像 ID 并将其加载到`Volume`中。
+随着[体数据](../cornerstone-core/volumes.md)被引入 `Cornerstone3D`，
+我们同时新增并维护了 `Streaming-volume-image-loader`——
+一个面向体数据的渐进式加载器。这个加载器的设计是接收一批 imageId，
+并把它们加载进一份**体数据**。
 
-## 从图像创建体积
+## 从影像构建体数据 {#creating-volumes-from-images}
 
-由于 3D`Volume`是由 2D 图像（在`StreamingImageVolume`中）组成的，因此其体积元数据是从 2D 图像的元数据派生的。
-因此，此加载器需要最初调用以获取图像元数据。这样，不仅可以在内存中预分配和缓存`Volume`，
-还可以在 2D 图像加载时渲染体积（逐步加载）。
+由于三维**体数据**是由二维影像构成的（在 `StreamingImageVolume` 中如此），
+它的体数据元数据是从这些二维影像的元数据推导出来的。
+因此这个加载器需要先发起一次请求来取得影像的元数据。这样一来，
+我们不仅能在内存中预分配并缓存一份**体数据**，
+还能在二维影像陆续加载的过程中就渲染这份体数据（也就是渐进式加载）。
 
 ![](../../assets/volume-building.png)
 
-通过预先获取所有图像（`imageIds`）的元数据，我们不需要为每个 imageId 创建[`图像`](../cornerstone-core/images.md)对象。
-相反，我们可以将图像的 pixelData 直接插入到正确位置的体积中。这保证了速度和内存效率（但也带来了预取元数据的最小成本）。
+通过预取所有影像（`imageIds`）的元数据，
+我们就不必为每个 imageId 都创建[影像](../cornerstone-core/images.md)对象，
+而是可以直接把影像的像素数据插入到体数据中正确的位置上。
+这保证了速度和内存效率（代价只是预取元数据这一点小开销）。
 
-## 从图像转换体积
+## 体数据与影像之间的互相转换 {#converting-volumes-fromto-images}
 
-`StreamingImageVolume`基于一系列获取的图像（2D）加载体积，`Volume`可以实现将其 3D 像素数据转换为 2D 图像的功能，
-而无需通过网络重新请求它们。例如，使用`convertToCornerstoneImage`，`StreamingImageVolume`实例获取一个 imageId 及其 imageId 索引并返回一个 Cornerstone 图像对象（需要 imageId 索引，因为我们需要在 3D 数组中定位 imageId 的 pixelData 并将其复制到 Cornerstone 图像上）。
+`StreamingImageVolume` 是基于一系列取来的（二维）影像加载体数据的；
+反过来，一份**体数据**也可以实现一些函数，
+把它的三维像素数据转换成二维影像，而不必再走一遍网络请求。
+例如通过 `convertToCornerstoneImage`，`StreamingImageVolume` 实例接收一个
+imageId 及其 imageId 索引，返回一个 Cornerstone Image 对象
+（需要 imageId 索引，是因为我们要在三维数组中定位该 imageId 的像素数据
+并把它复制到 Cornerstone Image 上）。
 
-这是一个可以反转的过程；如果一组`imageIds`具有体积的属性（相同的 FromOfReference、origin、dimension、direction 和 pixelSpacing），
-`Cornerstone3D`可以从这些图像 ID 中创建一个体积。
+这个过程是可逆的：只要一组 `imageId` 具备体数据应有的属性
+（相同的 FrameOfReference、原点、维度、方向和像素间距），
+`Cornerstone3D` 就能从它们构建出一份体数据。
 
-## 使用
+## 用法 {#usage}
 
-如前所述，应提前从图像元数据创建一个预缓存的体积。这可以通过调用`createAndCacheVolume`来完成。
+如前所述，应当先依据影像元数据创建一份预缓存的体数据。
+这可以通过调用 `createAndCacheVolume` 完成。
 
 ```js
 const ctVolumeId = 'cornerstoneStreamingImageVolume:CT_VOLUME';
@@ -38,17 +60,19 @@ const ctVolume = await volumeLoader.createAndCacheVolume(ctVolumeId, {
 });
 ```
 
-然后，可以调用体积的`load`方法来实际加载图像的像素数据。
+然后就可以调用该体数据的 `load` 方法，真正去加载那些影像的像素数据。
 
 ```js
 await ctVolume.load();
 ```
 
-## imageLoader
+## imageLoader {#imageloader}
 
-由于体积加载器不需要为`StreamingImageVolume`中的每个 imageId 创建[`图像`](../cornerstone-core/images.md)对象，
-它将在内部使用`skipCreateImage`选项来跳过图像对象的创建。
-否则，体积的图像加载器与`cornerstone-wado-image-loader`中的 wadors 图像加载器相同。
+由于体数据加载器不需要为 `StreamingImageVolume` 中的每个 imageId
+都创建[影像](../cornerstone-core/images.md)对象，
+它会在内部使用 `skipCreateImage` 选项来跳过影像对象的创建。
+除此之外，体数据所用的影像加载器与 `cornerstone-wado-image-loader`
+中编写的 wadors 影像加载器是相同的。
 
 ```js
 const imageIds = ['wadors:imageId1', 'wadors:imageId2'];
@@ -62,21 +86,24 @@ const ctVolume = await volumeLoader.createAndCacheVolume(ctVolumeId, {
 await ctVolume.load();
 ```
 
-## 要考虑的替代实现
+## 值得考虑的其他实现方式 {#alternative-implementations-to-consider}
 
-尽管我们相信我们的预取方法在确保尽可能快速地加载体积方面效果最佳，
-但可以有其他不依赖于此预取方法的体积加载器实现。
+尽管我们认为这种针对体数据的预取方式能保证体数据以最快的速度加载完成，
+但体数据加载器也可以有别的实现方式，不依赖这种预取。
 
-#### 无需预取元数据来创建体积
+#### 不预取元数据来构建体数据 {#creating-volumes-without-pre-fetching-metadata}
 
-在这种情况下，每个图像都需要单独创建，这意味着每个图像都需要加载并创建一个 Cornerstone [`图像`](../cornerstone-core/images.md)。
-这是一个昂贵的操作，因为所有图像对象都加载在内存中，并且需要从这些图像中单独创建一个[`Volume`](../cornerstone-core/volumes.md)。
+在这种方案下，每张影像都需要单独创建，
+也就是说每张影像都要被加载、并创建出一个 Cornerstone
+[影像](../cornerstone-core/images.md)对象。这是一项开销很大的操作，
+因为所有影像对象都被加载进内存，
+并且还需要再从这些影像单独创建出一份[体数据](../cornerstone-core/volumes.md)。
 
 优点：
 
-- 无需单独调用元数据来获取图像元数据。
+- 不需要额外发一次元数据请求去取影像元数据。
 
 缺点：
 
-- 性能成本
-- 不能逐步加载图像数据，因为这需要为每个图像变化创建一个新的体积
+- 性能开销
+- 无法渐进式加载影像数据，因为每换一张影像都要创建一份新的体数据

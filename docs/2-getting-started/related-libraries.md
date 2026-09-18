@@ -1,24 +1,60 @@
 ---
 id: related-libraries
 title: 相关库
+description: Cornerstone3D 的来历及其与周边库的关系，包括旧版 cornerstone-core 与 cornerstone-tools、react-vtkjs-viewport、用于三维渲染的 vtk.js，以及基于它构建的 OHIF Viewer。
+keywords:
+  - cornerstone-core
+  - cornerstone-tools
+  - react-vtkjs-viewport
+  - vtk.js
+  - OHIF Viewer
+  - Cornerstone3D 历史
+upstream: https://www.cornerstonejs.org/docs/getting-started/related-libraries
 ---
 
 # 相关库
 
-在本节中，我们将解释与 `Cornerstone3D` 相关的各种库。
+本节介绍与 `Cornerstone3D` 相关的各个库。
 
 ## 历史
 
-在解释这些库之前，我们将首先讨论 `Cornerstone3D` 的历史。在 `Cornerstone3D` 之前，自 2014 年以来我们便开发和维护了 [`cornerstone-core`](https://github.com/cornerstonejs/cornerstone) 和 [`cornerstone-tools`](https://github.com/cornerstonejs/cornerstoneTools)。由于 `Cornerstone3D` 相对于 `cornerstone-core` 的改进以及 `Cornerstone3DTools` 相对于 `cornerstone-tools` 的改进意义重大，长远来看，我们将把重点转移到 `Cornerstone3D` 上，并提供充分的文档以指导如何从旧版 `cornerstone` 升级到新的 `Cornerstone3D`。同时，我们将继续维护旧版 `cornerstone` 软件包并处理可能出现的关键错误。
+在介绍这些库之前，先说说 `Cornerstone3D` 的来历。在 `Cornerstone3D` 之前，
+我们从 2014 年起开发并维护了
+[`cornerstone-core`](https://github.com/cornerstonejs/cornerstone) 和
+[`cornerstone-tools`](https://github.com/cornerstonejs/cornerstoneTools)。
+由于 `Cornerstone3D` 相对 `cornerstone-core`、`Cornerstone3DTools` 相对
+`cornerstone-tools` 的改进幅度相当大，长期来看我们会把重心转向 `Cornerstone3D`，
+并提供从旧版 `cornerstone` 升级到新版 `Cornerstone3D` 的完整文档。
+在此期间，旧版 `cornerstone` 系列包仍会继续维护，关键缺陷也会照常修复。
 
-除了 `cornerstone-core` 和 `cornerstone-tools` 软件包之外，我们还维护了 [`react-vtkjs-viewport`](https://github.com/OHIF/react-vtkjs-viewport)，这是我们的首次尝试，利用 [vtk-js](https://github.com/kitware/vtk-js) 在 React 中实现 3D 渲染。目前，`react-vtkjs-viewport` 正在当前主要的 OHIF 查看器中用于 MPR 视图。促使 `Cornerstone3D` 开发的主要动机之一是希望能够像 `cornerstone-core` 一样将渲染与 UI 通过 React 进行解耦。此外，`react-vtkjs-viewport` 的内存管理对于更复杂的场景（如具有 10 个视口的 PET/CT 融合）来说是一个主要挑战。与旧版 cornerstone 类似，我们将把精力从 `react-vtkjs-viewport` 转向使用新的 `Cornerstone3D` 和 `Cornerstone3DTools` 软件包。
+除了 `cornerstone-core` 和 `cornerstone-tools`，我们还维护了
+[`react-vtkjs-viewport`](https://github.com/OHIF/react-vtkjs-viewport)——
+这是我们借助 [vtk-js](https://github.com/kitware/vtk-js) 在 React 中实现三维渲染的
+第一次尝试。`react-vtkjs-viewport` 目前仍用于 OHIF Viewer 主线版本的 MPR 视图。
 
-## 库
+促使我们开发 `Cornerstone3D` 的主要动因之一，是希望像 `cornerstone-core` 那样
+把渲染与 React 的 UI 解耦。此外，在更复杂的场景下——例如带 10 个视口的 PET/CT 融合——
+`react-vtkjs-viewport` 的内存管理是个很大的挑战。与旧版 cornerstone 类似，
+我们也会把投入从 `react-vtkjs-viewport` 转移到新的 `Cornerstone3D`
+和 `Cornerstone3DTools` 上。
+
+## 相关库
 
 ### vtk.js
 
-[`vtk-js`](https://github.com/kitware/vtk-js) 是一个用于 3D 计算机图形学、图像处理和可视化的开源 JavaScript 库。过去，我们在 `react-vtkjs-viewport` 库中使用 `vtk-js` 进行 3D 数据的渲染和交互。`Cornerstone3D` 的渲染引擎设计为使用 `vtk-js` 进行 3D 渲染。`vtk-js` 具有使用工具进行注释的支持，但我们决定使用 `Cornerstone3DTools` 来实现此目的，并且仅依赖 `vtk-js` 进行实际渲染。我们的路线图（尚未获得资助）包括在 `Cornerstone3D` 中启用 `vtk-js` 3D 注释工具的使用。
+[`vtk-js`](https://github.com/kitware/vtk-js) 是一个用于三维计算机图形、图像处理与
+可视化的开源 JavaScript 库。过去我们在 `react-vtkjs-viewport` 中用 `vtk-js` 渲染
+三维数据并处理交互。`Cornerstone3D` 的渲染引擎在设计上就使用 `vtk-js` 完成三维渲染。
 
-### OHIF 查看器
+`vtk-js` 本身带有基于工具的标注能力，但我们决定这部分交给 `Cornerstone3DTools`，
+只依赖 `vtk-js` 做实际渲染。我们的路线图中包含在 `Cornerstone3D` 里启用 `vtk-js`
+三维标注工具这一项（目前尚未获得资助）。
 
-[开放健康成像基金会（OHIF）](https://ohif.org/) 图像查看器是一个被学术界和商业项目（例如[癌症影像档案 (TCIA)](https://www.cancerimagingarchive.net/) 和 [NCI 影像数据共享](https://datacommons.cancer.gov/repository/imaging-data-commons)）使用的开源图像查看器。它是一个可扩展的网络成像平台，无需任何足迹和安装。目前，OHIF 3.9 依赖于 `Cornerstone3D` monorepo 中的所有库来实现其图像渲染和注释功能。
+### OHIF Viewer
+
+[Open Health Imaging Foundation（OHIF）](https://ohif.org/) 影像阅片器是一个开源阅片器，
+已被用于学术和商业项目，例如
+[The Cancer Imaging Archive（TCIA）](https://www.cancerimagingarchive.net/) 和
+[NCI Imaging Data Commons](https://datacommons.cancer.gov/repository/imaging-data-commons)。
+它是一个可扩展的 Web 影像平台，零占用、无需安装。目前 OHIF 3.9 的影像渲染与标注功能
+全部依赖 `Cornerstone3D` monorepo 中的各个库。

@@ -1,29 +1,39 @@
 ---
 id: custom-volume-loading
-title: 自定义体积加载顺序
+title: 自定义体数据加载顺序
+description: 自定义体数据切片加载顺序的教程。示例把两份体数据的加载请求交错起来，让它们同步逐层加载而不是一份接一份，涵盖 getImageLoadRequests 取请求、用 lodash 交错排序，以及把请求重新加回 imageLoadPoolManager。
+keywords:
+  - 自定义加载顺序
+  - getImageLoadRequests
+  - imageLoadPoolManager
+  - 交错加载
+  - callLoadImage
+upstream: https://www.cornerstonejs.org/docs/how-to-guides/custom-volume-loading
 ---
 
-# 自定义体积加载顺序
+# 自定义体数据加载顺序 {#custom-volume-loading-order}
 
-在本操作指南中，我们将向您展示如何以自定义顺序加载体积。
+本指南将演示如何按自定义顺序加载体数据。
 
-## 介绍
+## 介绍 {#introduction}
 
-`Volumes`可以由一组二维图像构成，您可能会问一个问题：
+**体数据**可以由一组二维影像构成，于是你可能会问：
 
-:::note 如何
+:::note 怎么做
 
-如何在体积加载过程中重新排序图像请求（自上而下、从下至上等）？
+我该如何重排体数据加载过程中的影像请求顺序（自上而下、自下而上等）？
 
 :::
 
-## 实现
+## 实现 {#implementation}
 
-让我们重新排序两个体积加载，使它们一起加载其切片（而不是一个体积之后再加载另一个）。要创建自定义的体积加载顺序，我们需要从体积对象中获取`imageLoadRequests`并按自定义顺序排序。
+我们来把两份体数据的加载重新排序，让它们同步逐层加载
+（而不是一份加载完再加载另一份）。要自定义体数据的加载顺序，
+需要从体数据对象上取到 `imageLoadRequests`，再按自定义顺序排序。
 
-### 第一步：创建一个体积
+### 第 1 步：创建体数据 {#step-1-create-a-volume}
 
-我们从一组`imageIds`创建一个类似于以前教程的体积
+和前面的教程一样，我们从一组 `imageIds` 创建体数据。
 
 ```js
 const ptVolume = await volumeLoader.createAndCacheVolume(ptVolumeId, {
@@ -34,18 +44,18 @@ const ctVolume = await volumeLoader.createAndCacheVolume(ctVolumeId, {
 });
 ```
 
-### 第二步：获取imageLoad请求
+### 第 2 步：取得 imageLoad 请求 {#step-2-getting-imageload-requests}
 
-接下来，我们需要获取imageLoad请求
+接下来需要取得那些 imageLoad 请求。
 
 ```js
 const ctRequests = ctVolume.getImageLoadRequests();
 const ptRequests = ptVolume.getImageLoadRequests();
 ```
 
-### 第三步：自定义排序请求
+### 第 3 步：自定义请求顺序 {#step-3-custom-ordering-of-requests}
 
-我们使用lodash助手将请求按一个接一个的方式合并在一起。
+我们用 lodash 的辅助函数把两组请求一前一后地交错合并起来。
 
 ```js
 import _ from 'lodash';
@@ -55,9 +65,10 @@ const ctPtRequests = _.flatten(_.zip(ctRequests, ptRequests)).filter(
 );
 ```
 
-### 第四步：将请求添加回imageLoadPoolManager
+### 第 4 步：把请求加回 imageLoadPoolManager {#step-4-add-requests-back-to-imageloadpoolmanager}
 
-我们需要将请求添加回`imageLoadPoolManager`（我们需要处理绑定到`callLoadImage`的值）。
+我们需要把这些请求重新加回 `imageLoadPoolManager`
+（同时还要注意处理好要绑定到 `callLoadImage` 上的那些取值）。
 
 ```js
 ctPtRequests.forEach((request) => {
@@ -82,10 +93,10 @@ ctPtRequests.forEach((request) => {
 
 :::note 提示
 
-没有必要调用`volume.load`，因为这个方法基本上和我们的第3步和第4步的过程一样。
+不需要再调用 `volume.load`，因为该方法做的基本上就是上面第 3、4 步的事情。
 
 :::
 
-## 结果
+## 效果 {#results}
 
 ![customLoading](../assets/custom-loading.gif)

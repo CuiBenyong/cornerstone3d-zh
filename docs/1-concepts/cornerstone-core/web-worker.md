@@ -1,19 +1,36 @@
 ---
 id: webWorker
-title: Web Workers
+title: Web Worker
+description: Cornerstone3D 基于 comlink 封装的 Web Worker API，把计算密集任务放到后台线程执行。本文说明 WebWorkerManager 的 registerWorker、executeTask、回调传递与 terminate 用法，以及请求分组优先级与空闲自动终止配置。
+keywords:
+  - Web Worker
+  - WebWorkerManager
+  - registerWorker
+  - executeTask
+  - comlink
+  - RequestType
+  - autoTerminateOnIdle
+upstream: https://www.cornerstonejs.org/docs/concepts/cornerstone-core/webWorker
 ---
 
-WebWorkers 提供了一种在后台线程中运行脚本的方法，允许 Web 应用程序在不干扰用户界面的情况下执行任务。它们对于执行计算密集型任务或需要大量处理时间的任务特别有用。
+WebWorker 提供了一种在后台线程运行脚本的方式，让 Web 应用可以执行任务而不干扰用户界面。
+它对执行计算密集型任务、或那些需要较长处理时间的任务特别有用。
 
-通常，与worker一起工作需要大量样板代码、postMessage 调用和事件侦听器。 Cornerstone 提供了一个简单的 API 来创建和使用工作线程，为您隐藏了所有复杂性。
+一般来说，与 worker 打交道需要写大量样板代码、postMessage 调用和事件监听器。
+Cornerstone 提供了一套简单的 API 来创建和使用 worker，把这些复杂性都替你隐藏了。
 
-## 要求
+## 前置要求 {#requirements}
 
-您需要安装 [`comlink`](https://www.npmjs.com/package/comlink) 作为应用程序的依赖项。仅此而已。`comlink` 是一个库，允许您像使用本地对象一样使用 WebWorkers，而不必担心底层消息传递。虽然它不处理优先级队列、负载平衡或工作线程生命周期，但它提供了一个简单的 API 来与工作线程进行通信，Cornerstone 使用它来创建更强大且用户友好的 API。
+你需要把 [`comlink`](https://www.npmjs.com/package/comlink) 安装为应用的依赖，
+仅此而已。`comlink` 是一个库，它让你可以像使用本地对象那样使用 WebWorker，
+不必操心底层的消息通信。虽然它本身不处理优先级队列、负载均衡和 worker 生命周期，
+但它提供了与 worker 通信的简单 API——Cornerstone 正是在此基础上
+构建出更健壮、更好用的 API。
 
-## 使用示例
+## 用法示例 {#usage-example}
 
-通过一个例子我们会更容易解释WebWorker API。假设您有一组函数你想在后台运行。您需要编写一个通过 comlink 公开这些函数的对象。
+用一个例子来解释 WebWorker API 会更容易。假设你有一组函数想放到后台运行，
+你需要写一个对象，通过 comlink 把这些函数暴露出去。
 
 ```js
 // file/location/my-awesome-worker.js
@@ -37,37 +54,47 @@ const obj = {
 expose(obj);
 ```
 
-：：：note
-正如您在上面看到的，我们的对象可以包含任意数量的函数并且可以保存本地状态。这些函数的唯一要求是参数应该是可序列化的。这意味着您不能将 DOM 元素、函数或任何其他不可序列化的对象作为参数传递。
+:::note
+如上所见，我们的对象可以包含任意数量的函数，也可以持有本地状态。
+对这些函数唯一的要求是：**参数必须是可序列化的**。
+也就是说你不能把 DOM 元素、函数或任何其他不可序列化的对象作为参数传进去。
 
-我们使用对象作为参数。因此，在上面我们使用`fib({value})`而不是`fib(value)`（`value`只是一个参数名称；您可以为参数使用任何您想要的名称。）
+我们用对象来传参。所以上面写的是 `fib({value})` 而不是 `fib(value)`
+（`value` 只是一个参数名，你可以随意命名）。
 :::
-现在关键是要告知Cornerstone这个功能，让它在后台顺利运行。让我们深入了解一下。
 
-## WebWorker 管理器
+接下来的关键是把这个函数告知 Cornerstone，好让它能在后台顺畅运行。下面就来看看。
 
-WebWorkerManager 在 WebWorker API 中起着至关重要的作用。它的主要功能是创建和监督worker。通过分配具有不同优先级和队列类型的任务，您可以依靠管理器根据指定的优先级在后台有效地执行它们。此外，它还处理worker的生命周期，分配工作负载，并提供用户友好的 API 来执行任务。
+## WebWorker 管理器 {#webworker-manager}
 
-### `registerWorker`
+WebWorkerManager 在 WebWorker API 中扮演核心角色，它的主要职责是创建和管理 worker。
+通过为任务指定不同的优先级和队列类型，你可以依赖管理器按指定的优先级
+在后台有效地执行它们。除此之外，它还负责 worker 的生命周期、分配工作负载，
+并提供一套好用的 API 来执行任务。
 
-使用唯一的名称和函数注册一个新的worker类型，以便让经理知道它。
+### `registerWorker` {#registerworker}
 
-参数是
+用一个唯一的名字和一个函数注册一种新的 worker 类型，让管理器知道它的存在。
 
-- `workerName`：worker 类型的名称（应该是唯一的），稍后我们将使用它来调用函数。
-- `workerFn`：一个返回新 Worker 实例的函数（稍后会详细介绍）
-- `options` 具有以下属性的对象：
-  - `maxWorkerInstances(default=1)`：可以创建的该工作线程类型的最大实例数。更多实例意味着有多个调用
-    对于同一函数，它们可以被卸载到工作类型的其他实例。
-- `overwrite (default=false)`：如果已经注册，是否覆盖现有的工作类型
-  - `autoTerminateOnIdle`（默认为 false）可用于在经过一定量的空闲时间（以毫秒为单位）后终止工作线程。这对于不经常使用的worker非常有用，并且您希望在特定时间段后终止它们。在经理身上。该方法的参数是对象
-  `{启用：布尔值，idleTimeThreshold：数字（毫秒）}`。
+参数为：
+
+- `workerName`：该 worker 类型的名字（应当唯一），后面调用函数时要用到它。
+- `workerFn`：一个返回新 Worker 实例的函数（下面细说）。
+- `options`：一个对象，包含以下属性：
+  - `maxWorkerInstances`（默认 `1`）：该 worker 类型最多可创建多少个实例。
+    实例更多意味着：如果对同一个函数有多次调用，它们可以被分摊到该 worker 类型的
+    其他实例上。
+  - `overwrite`（默认 `false`）：当该 worker 类型已注册时，是否覆盖它。
+  - `autoTerminateOnIdle`（默认 false）：可用于在经过一定空闲时间（毫秒）后
+    终止 worker。这对那些不常使用、希望在一段时间后终止的 worker 很有用。
+    该参数的取值形如 `{enabled: boolean, idleTimeThreshold: number(ms)}`。
 
 :::tip
-请注意，如果worker被终止，并不意味着该worker从管理器中被销毁。事实上，对worker的任何后续调用都将创建worker的新实例，并且一切都会按预期工作。
+注意，worker 被终止并不意味着它从管理器中被销毁了。实际上，
+后续任何对该 worker 的调用都会创建一个新的 worker 实例，一切都会照常工作。
 :::
 
-因此，要注册我们上面创建的worker，我们将执行以下操作：
+所以，要注册我们上面创建的那个 worker，写法如下：
 
 ```js
 import { getWebWorkerManager } from '@cornerstonejs/core';
@@ -79,7 +106,7 @@ const workerFn = () => {
       import.meta.url
     ),
     {
-      name: 'ohif', // name used by the browser to name the worker
+      name: 'ohif', // 浏览器用来命名该 worker 的名字
     }
   );
 };
@@ -94,33 +121,39 @@ const options = {
 workerManager.registerWorker('ohif-worker', workerFn, options);
 ```
 
-在上面您看到，您需要创建一个返回新 Worker 实例的函数。
-为了让工作线程工作，它应该位于主线程可以访问的目录中（它可以是相对的到当前目录）。
+如上所示，你需要创建一个返回新 Worker 实例的函数。为了让这个 worker 能正常工作，
+它所在的目录必须是主线程可以访问到的（可以是相对于当前目录的路径）。
 
 :::note
-您可以指定两个名称：
+这里有两个可以指定的名字：
 
-1. workerFn中的`name`，浏览器使用该名称在调试器中显示worker名称
-2. 注册名称，我们稍后用它来调用函数
+1. `workerFn` 中的 `name`，浏览器用它在调试器里显示 worker 的名称；
+2. 注册时用的名字，我们后面调用函数时用的是这个。
 
 :::
 
-### `executeTask`
+### `executeTask` {#executetask}
 
-到目前为止，经理只知道可用的workers，但不知道如何处理他们。
+到目前为止，管理器只知道有哪些 worker 可用，但还不知道拿它们做什么。
 
-`executeTask` 用于在工作线程上执行任务。它需要以下参数：
+`executeTask` 用于在某个 worker 上执行任务，它接受以下参数：
 
-- `workerName`：我们之前注册的worker类型的名称
-- `methodName`：我们要在worker上执行的方法的名称（函数名称，在上面的示例中为`fib`或`inc`）
-- `args` (`default = {}`)：传递给函数的参数。参数应该是可序列化的，这意味着您不能将 DOM 元素、函数或任何其他不可序列化对象作为参数传递（请检查下面如何传递不可序列化函数）
-- `options` 具有以下属性的对象：
-- `requestType (default = RequestType.COMPUTE)` ：请求的组。这用于确定请求的优先级。默认为`RequestType.COMPUTE`，这是最低优先级。其他组按优先级排列为`RequestType.INTERACTION`和`RequestType.THUMBNAIL`、`RequestType.PREFETCH`
-- `priority` (`default = 0`)：指定组内请求的优先级。数字越小，优先级越高。
-- `options` (`default= {}`)：池管理器的选项（您很可能不需要更改它）
-- `callbacks` (`default = []`)：传入您想要在工作程序内部调用的任何函数。
+- `workerName`：我们此前注册的那个 worker 类型的名字。
+- `methodName`：想在该 worker 上执行的方法名（即函数名，
+  在上面的例子里是 `fib` 或 `inc`）。
+- `args`（默认 `{}`）：传给该函数的参数。参数必须可序列化，
+  也就是说不能传 DOM 元素、函数或任何其他不可序列化的对象
+  （不可序列化的函数怎么传，见下文）。
+- `options`：一个对象，包含以下属性：
+  - `requestType`（默认 `RequestType.COMPUTE`）：该请求所属的分组，
+    用于给请求排优先级。默认是 `RequestType.COMPUTE`，优先级最低。
+    其他分组按优先级排列为 `RequestType.INTERACTION`、`RequestType.THUMBNAIL`、
+    `RequestType.PREFETCH`。
+  - `priority`（默认 `0`）：该请求在所属分组内的优先级。数值越小优先级越高。
+  - `options`（默认 `{}`）：传给池管理器的选项（你大概不需要改它）。
+  - `callbacks`（默认 `[]`）：传入任何你希望在 worker 内部被调用的函数。
 
-现在要在工作线程上执行`fib`函数，我们将执行以下操作：
+现在，要在 worker 上执行 `fib` 函数，写法如下：
 
 ```js
 import { getWebWorkerManager } from '@cornerstonejs/core';
@@ -129,7 +162,10 @@ const workerManager = getWebWorkerManager();
 workerManager.executeTask('ohif-worker', 'fib', { value: 10 });
 ```
 
-上面的代码将在名称为`ohif-worker`、参数为`{value:10}`的工作线程上执行`fib`函数。当然这是一个简化的例如，通常您需要在任务完成或失败时执行某些操作。自从回归以来`executeTask` 是一个 Promise，你可以使用 `then` 和 `catch` 方法来处理结果。
+上面这段代码会在名为 `ohif-worker` 的 worker 上、以参数 `{value: 10}`
+执行 `fib` 函数。当然这是个简化的例子，实际中你往往需要在任务完成或失败时
+做一些处理。由于 `executeTask` 返回的是一个 promise，
+你可以用 `then` 和 `catch` 方法来处理结果。
 
 ```js
 workerManager
@@ -142,7 +178,7 @@ workerManager
   });
 ```
 
-或者只是等待结果
+或者直接 await 结果：
 
 ```js
 try {
@@ -155,11 +191,14 @@ try {
 }
 ```
 
-### `eventListeners`
+### `eventListeners` {#eventlisteners}
 
-有时，需要向worker提供回调函数。例如，如果您希望在工作人员取得进展时更新用户界面。如前所述，不可能直接将函数作为参数传递给工作程序。但是，您可以通过利用选项中的`callbacks`属性来解决此问题。这些`回调`可以根据其位置作为参数方便地传递给函数。
+有时需要给 worker 传一个回调函数，比如你希望在 worker 有进展时更新用户界面。
+如前所述，无法直接把函数作为参数传给 worker。不过可以借助 options 中的
+`callbacks` 属性绕过这个限制——这些 `callbacks` 会按其位置顺序，
+作为参数方便地传给那个函数。
 
-代码库中的真实示例：
+来自代码库的真实例子：
 
 ```js
 const results = await workerManager.executeTask(
@@ -178,9 +217,11 @@ const results = await workerManager.executeTask(
   }
 );
 ```
-正如您所看到的，我们将一个函数作为回调传递给工作线程。该函数作为 NEXT 参数在 args 之后传递给工作程序。
 
-在worker中我们有
+如上所见，我们把一个函数作为回调传给了 worker。该函数会作为 `args` **之后的
+下一个参数**传给 worker。
+
+在 worker 里则是这样：
 
 ```js
 import { expose } from 'comlink';
@@ -202,6 +243,7 @@ const obj = {
 expose(obj);
 ```
 
-### `terminate`
+### `terminate` {#terminate}
 
-要终止worker，您可以使用`webWorkerManager.terminate(workerName)`。停止给定工作线程的所有实例并清理资源。
+要终止一个 worker，可以使用 `webWorkerManager.terminate(workerName)`。
+它会停止给定 worker 的所有实例并清理资源。

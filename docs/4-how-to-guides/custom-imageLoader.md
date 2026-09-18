@@ -1,56 +1,77 @@
 ---
 id: custom-image-loader
-title: 自定义图像加载器
+title: 自定义影像加载器
+description: 实现自定义影像加载器的分步指南。示例用 XMLHttpRequest 取回像素数据并返回包含 Promise 的影像加载对象，随后说明如何保证元数据同样可用、如何按 URL scheme 注册加载器，以及如何在视口中使用。
+keywords:
+  - 自定义影像加载器
+  - registerImageLoader
+  - imageLoadObject
+  - XMLHttpRequest
+  - URL scheme
+upstream: https://www.cornerstonejs.org/docs/how-to-guides/custom-image-loader
 ---
 
-# 自定义图像加载器
+# 自定义影像加载器 {#custom-image-loader}
 
-在这个操作指南中，我们将向您展示如何创建一个自定义图像加载器。您应该熟悉以下核心概念：
+本指南将演示如何创建一个自定义影像加载器。你应当先熟悉以下核心概念：
 
-- [图像加载器](../1-concepts/cornerstone-core/imageLoader.md)
-- [图像对象](../1-concepts/cornerstone-core/images.md)
+- [影像加载器](../1-concepts/cornerstone-core/imageLoader.md)
+- [影像对象](../1-concepts/cornerstone-core/images.md)
 - [元数据提供者](../1-concepts/cornerstone-core/metadataProvider.md)
 
-## 介绍
+## 介绍 {#introduction}
 
-Cornerstone **不**处理图像加载。它将图像加载委托给[图像加载器](../1-concepts/cornerstone-core/imageLoader.md)。Cornerstone团队已经开发了常用的图像加载器（如用于从符合wado标准的dicom服务器加载图像的`CornerstoneDICOMImageLoader`，通过`wado-rs`或`wado-uri`加载，加载PNG和JPEG网页图像的`CornerstoneWebImageLoader`以及用于加载NIFTI图像的`cornerstone-nifti-image-loader`）。然而，您可能会问自己：
+Cornerstone **不**负责影像加载。它把影像加载委托给
+[影像加载器](../1-concepts/cornerstone-core/imageLoader.md)。
+Cornerstone 团队已经开发了一些常用的影像加载器：
+`CornerstoneDICOMImageLoader`（用 `wado-rs` 或 `wado-uri`
+从兼容 wado 的 DICOM 服务器加载影像）、
+`CornerstoneWebImageLoader`（加载 PNG、JPEG 等 Web 图片）、
+以及 `cornerstone-nifti-image-loader`（加载 NIfTI 影像）。
+不过你可能会问：
 
-:::note 如何实现
+:::note 怎么做
 
-如何构建一个自定义图像加载器？
+我该如何构建一个自定义影像加载器？
 
 :::
 
-## 实现
+## 实现 {#implementation}
 
-让我们实现一个`imageLoader`，使用`XMLHttpRequest`获取像素数据，并返回一个包含Promise的图像加载对象，该Promise解析为Cornerstone的[`image`](../1-concepts/cornerstone-core/images.md)。
+我们来实现一个 `imageLoader`：它用 `XMLHttpRequest` 取回像素数据，
+并返回一个影像加载对象，其中的 Promise 会解析为一个 Cornerstone
+[影像](../1-concepts/cornerstone-core/images.md)。
 
-### 步骤1：创建图像加载器
+### 第 1 步：创建影像加载器 {#step-1-create-an-image-loader}
 
-下面，我们创建一个接受`imageId`并返回一个`imageLoadObject`作为Promise的`imageLoader`。
+下面创建一个 `imageLoader`，它接收一个 `imageId`，
+并以 Promise 的形式返回一个 `imageLoadObject`。
 
 ```js
 function loadImage(imageId) {
-  // 解析imageId并返回一个可用的URL（省略逻辑）
+  // 解析 imageId 并返回一个可用的 URL（这部分逻辑省略）
   const url = parseImageId(imageId);
 
-  // 创建一个新的Promise
+  // 创建一个新的 Promise
   const promise = new Promise((resolve, reject) => {
-    // 在Promise构造函数内，发出图像数据请求
+    // 在 Promise 构造函数内部，
+    // 发起对影像数据的请求
     const oReq = new XMLHttpRequest();
     oReq.open('get', url, true);
     oReq.responseType = 'arraybuffer';
     oReq.onreadystatechange = function (oEvent) {
       if (oReq.readyState === 4) {
         if (oReq.status == 200) {
-          // 请求成功，创建一个图像对象（省略逻辑）
-          // 这可能需要将图像解码为原始像素数据，确定行/列，像素间距等。
+          // 请求成功，创建一个影像对象（这部分逻辑省略）
+          // 这一步可能需要把影像解码为原始像素数据、
+          // 确定行列数、像素间距等等。
           const image = createImageObject(oReq.response);
 
-          // 通过解析Promise返回图像对象
+          // 通过 resolve Promise 把影像对象返回出去
           resolve(image);
         } else {
-          // 出现错误，通过拒绝Promise返回包含错误的对象
+          // 出错了，通过 reject Promise
+          // 返回一个包含该错误的对象
           reject(new Error(oReq.statusText));
         }
       }
@@ -59,39 +80,46 @@ function loadImage(imageId) {
     oReq.send();
   });
 
-  // 返回一个包含Promise的对象给cornerstone，这样它可以设置回调函数，
-  // 在成功/解析和失败/拒绝的情况下异步调用。
+  // 把包含该 Promise 的对象返回给 cornerstone，
+  // 好让它为成功 / resolve 与失败 / reject 两种情形设置异步回调。
   return {
     promise,
   };
 }
 ```
 
-### 步骤2：确保图像元数据也可用
+### 第 2 步：保证影像元数据同样可用 {#step-2-ensure-image-metadata-is-also-available}
 
-我们的图像加载器返回一个包含像素数据及相关信息的`imageLoadObject`，但Cornerstone可能还需要[额外的元数据](../1-concepts/cornerstone-core/metadataProvider.md)来显示图像。请参阅[自定义元数据提供者](custom-metadata-provider.md)文档以了解如何执行此操作。
+我们的影像加载器返回的 `imageLoadObject` 包含像素数据及相关信息，
+但 Cornerstone 可能还需要
+[额外的元数据](../1-concepts/cornerstone-core/metadataProvider.md)
+才能显示这张影像。具体怎么做，见
+[自定义元数据提供者](./custom-metadata-provider.md)文档。
 
-### 步骤3：图像加载器的注册
+### 第 3 步：注册影像加载器 {#step-3-registration-of-image-loader}
 
-在实现图像加载器之后，您需要将其注册到Cornerstone。首先，您需要决定图像加载器支持的网址方案。假设您的图像加载器支持`custom1`方案，那么任何以`custom1://`开头的imageId都会由您的图像加载器处理。
+实现好影像加载器之后，需要把它注册到 Cornerstone。首先要决定
+你的影像加载器支持哪个 URL scheme。假设它想支持 `custom1` scheme，
+那么任何以 `custom1://` 开头的 imageId 都会交给你的加载器处理。
 
 ```js
 // 注册
 cornerstone.imageLoader.registerImageLoader('custom1', loadImage);
 ```
 
-## 用法
+## 用法 {#usage}
 
 ```js
-// 按如下方式加载的图像将传递给我们的loadImage函数：
+// 像下面这样加载的影像会被交给我们的 loadImage 函数：
 stackViewport.setStack(['custom1://example.com/image.dcm']);
 ```
 
 <details>
 <summary>
-使用 Viewport API 加载图像
+用视口 API 加载影像
 </summary>
 
-在早期版本的Cornerstone中，您可以使用`loadImage`或`loadAndCacheImage`加载图像。然而，在`Cornerstone3D`中，此任务可以使用`Viewports` APIs来完成。
+在 Cornerstone 早前的版本中，你可以用 `loadImage` 或 `loadAndCacheImage`
+来加载影像。但在 `Cornerstone3D` 中，这件事是通过**视口**的 API 完成的。
 
 </details>

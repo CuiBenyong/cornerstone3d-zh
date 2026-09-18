@@ -1,22 +1,32 @@
----  
-id: basic-manipulation-tool  
----  
+---
+id: basic-manipulation-tool
+title: 操作工具
+description: Cornerstone3D 入门教程：为堆栈视口添加缩放与窗宽窗位操作工具。讲解 addTool 注册工具、用 ToolGroupManager 创建工具组、addViewport 关联视口，以及通过 setToolActive 绑定鼠标按键。
+keywords:
+  - Cornerstone3D 操作工具
+  - ZoomTool
+  - WindowLevelTool
+  - ToolGroupManager
+  - setToolActive
+  - MouseBindings
+upstream: https://www.cornerstonejs.org/docs/tutorials/basic-manipulation-tool
+---
 
 # 操作工具
 
-在本教程中，您将学习如何添加缩放操作工具。
+本教程将演示如何添加一个缩放操作工具。
 
-## 前言
+## 前提 {#preface}
 
-为了渲染体积数据，我们需要：
+要完成本教程，我们需要：
 
-- 初始化库
-- 一个 HTMLDivElement 用于渲染视口
-- 图像路径（`imageId`）
+- 初始化各个库
+- 一个 HTMLDivElement 用来显示视口
+- 影像的路径（即 `imageId`）
 
-## 实现
+## 实现 {#implementation}
 
-**初始化 cornerstone 和相关库**
+**初始化 cornerstone 及相关库**
 
 ```js
 import { init as coreInit } from '@cornerstonejs/core';
@@ -28,9 +38,9 @@ await dicomImageLoaderInit();
 await cornerstoneToolsInit();
 ```
 
-为了本教程，我们已经将图像存储在服务器上。
+为了本教程的演示，我们已经把影像放在了服务器上。
 
-首先，让我们创建一个 HTMLDivElement，并对其进行样式设置。
+先创建一个 HTMLDivElement 并设置样式。
 
 ```js
 const content = document.getElementById('content');
@@ -45,14 +55,14 @@ element.style.height = '500px';
 content.appendChild(element);
 ```
 
-接下来，我们需要一个 `renderingEngine`。
+接下来需要一个 `renderingEngine`。
 
 ```js
 const renderingEngineId = 'myRenderingEngine';
 const renderingEngine = new RenderingEngine(renderingEngineId);
 ```
 
-在这个示例中，我们可以使用 StackViewport。
+这个例子用堆栈视口（StackViewport）就够了。
 
 ```js
 const viewportId = 'CT_AXIAL_STACK';
@@ -66,7 +76,7 @@ const viewportInput = {
 renderingEngine.enableElement(viewportInput);
 ```
 
-RenderingEngine 将处理视口的创建，我们可以获取视口对象并设置图像。
+视口的创建由渲染引擎负责。我们可以取到视口对象并把影像设置上去。
 
 ```js
 const viewport = renderingEngine.getViewport(viewportId);
@@ -76,15 +86,15 @@ viewport.setStack(imageIds);
 viewport.render();
 ```
 
-为了使用操作工具，我们需要通过 `addTool` API 将它们添加到 `Cornerstone3DTools` 的内部状态中。
+要使用操作工具，需要先通过 `addTool` API 把它们加入 `Cornerstone3DTools` 的内部状态。
 
 ```js
 addTool(ZoomTool);
 addTool(WindowLevelTool);
 ```
 
-接下来，创建一个 ToolGroup 并添加我们要使用的工具。  
-ToolGroups 使得在多个视口之间共享工具成为可能，因此我们还需要让 ToolGroup 知道它应该在哪些视口上操作。
+接着创建一个工具组，把想用的工具加进去。工具组让多个视口可以共享同一批工具，
+所以还需要告诉工具组它应该作用在哪些视口上。
 
 ```js
 const toolGroupId = 'myToolGroup';
@@ -98,19 +108,18 @@ toolGroup.addViewport(viewportId, renderingEngineId);
 
 :::note 提示
 
-为什么要将 `renderingEngineUID` 添加到 ToolGroup 中？  
-因为 `viewportId` 在每个 `renderingEngine` 中是唯一的。
+为什么要把 renderingEngineId 也传给工具组？因为 viewportId 只在单个渲染引擎内唯一。
 
 :::
 
-接下来，设置工具为激活状态，这意味着我们还需要为该工具定义绑定（哪个鼠标按钮使其激活）。
+然后把工具设为 `Active（激活）`，这意味着还要为它定义绑定——也就是按哪个鼠标键时它生效。
 
 ```js
-// 设置 WindowLevel 工具为激活状态，当鼠标左键按下时激活
+// 鼠标左键按下时激活窗宽窗位工具
 toolGroup.setToolActive(WindowLevelTool.toolName, {
   bindings: [
     {
-      mouseButton: csToolsEnums.MouseBindings.Primary, // 左键点击
+      mouseButton: csToolsEnums.MouseBindings.Primary, // 左键
     },
   ],
 });
@@ -118,13 +127,13 @@ toolGroup.setToolActive(WindowLevelTool.toolName, {
 toolGroup.setToolActive(ZoomTool.toolName, {
   bindings: [
     {
-      mouseButton: csToolsEnums.MouseBindings.Secondary, // 右键点击
+      mouseButton: csToolsEnums.MouseBindings.Secondary, // 右键
     },
   ],
 });
 ```
 
-## 完整代码
+## 完整代码 {#final-code}
 
 <details>
 <summary>完整代码</summary>
@@ -157,7 +166,7 @@ content.appendChild(element);
 // ============================= //
 
 /**
- * 运行示例
+ * 运行演示
  */
 async function run() {
   await coreInit();
@@ -172,7 +181,7 @@ async function run() {
     wadoRsRoot: 'https://d14fa38qiwhyfd.cloudfront.net/dicomweb',
   });
 
-  // 实例化渲染引擎
+  // 实例化一个渲染引擎
   const renderingEngineId = 'myRenderingEngine';
   const renderingEngine = new RenderingEngine(renderingEngineId);
 
@@ -205,7 +214,7 @@ async function run() {
   toolGroup.setToolActive(WindowLevelTool.toolName, {
     bindings: [
       {
-        mouseButton: csToolsEnums.MouseBindings.Primary, // 左键点击
+        mouseButton: csToolsEnums.MouseBindings.Primary, // 左键
       },
     ],
   });
@@ -213,7 +222,7 @@ async function run() {
   toolGroup.setToolActive(ZoomTool.toolName, {
     bindings: [
       {
-        mouseButton: csToolsEnums.MouseBindings.Secondary, // 右键点击
+        mouseButton: csToolsEnums.MouseBindings.Secondary, // 右键
       },
     ],
   });
@@ -227,9 +236,9 @@ run();
 
 ![](../assets/basic-manipulation-tool.png)
 
-## 了解更多
+## 延伸阅读 {#read-more}
 
-了解更多关于：
+进一步了解：
 
-- [ToolGroup](../1-concepts/cornerstone-tools/toolGroups.md)
-- [Tools](../1-concepts/cornerstone-tools/tools.md)
+- [工具组（ToolGroup）](../1-concepts/cornerstone-tools/toolGroups.md)
+- [工具](../1-concepts/cornerstone-tools/tools.md)

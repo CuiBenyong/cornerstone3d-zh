@@ -1,56 +1,74 @@
 ---
 id: touchEvents
 title: 触摸事件
+description: 触摸事件支持多点触控手势，包含 TOUCH_START、TOUCH_PRESS、TOUCH_DRAG、TOUCH_TAP、TOUCH_SWIPE 等事件。本文说明事件触发顺序与各自的判定阈值、多点触控如何归约为单点、拖拽事件的 delta 计算、按触点数量绑定工具的方式，以及触摸事件与鼠标事件的对应关系。
+keywords:
+  - 触摸事件
+  - TOUCH_DRAG
+  - TOUCH_SWIPE
+  - TOUCH_TAP
+  - 多点触控
+  - numTouchPoints
+  - ITouchPoints
+upstream: https://www.cornerstonejs.org/docs/concepts/cornerstone-tools/touchEvents
 ---
 
-# 触摸事件
+# 触摸事件 {#touch-events}
 
-当用户用一个或多个触控点（如手指或触笔）触摸设备时，会触发触摸事件。触摸点的流程如下：
+当用户用一个或多个触点（例如手指或触控笔）触摸设备时，就会触发触摸事件。
+触点的事件流如下：
 
 1. `TOUCH_START`
 2. `TOUCH_START_ACTIVATE`
-3. 可选: `TOUCH_PRESS`
-4. 可选: `TOUCH_DRAG`
+3. 可选：`TOUCH_PRESS`
+4. 可选：`TOUCH_DRAG`
 5. `TOUCH_END`
 
-每次用户放下手指并抬起时，触摸顺序流程将始终遵循上述顺序。触摸事件并不与点击事件互斥。
+用户每一次按下手指再抬起，触摸事件的顺序都会遵循上面这个流程。
+触摸事件与点击事件并不互斥。
 
-其他可以单独出现的触摸事件是`TOUCH_TAP`事件和`TOUCH_SWIPE`事件。一个`TOUCH_TAP`将触发一个`TOUCH_START` -> `TOUCH_END`事件流程。
-如果用户连续点击，则只会触发一个`TOUCH_TAP`事件，并记录用户点击的次数。
-`TOUCH_SWIPE`事件发生在用户在单个拖拽周期内在画布上移动超过`48px`的情况下。此外，只有在触摸屏幕后`200ms`内发生此移动时，`TOUCH_SWIPE`才会激活。
-如果用户对角移动，将同时触发`LEFT`/`RIGHT`和`UP`/`DOWN`滑动。
+另外还有两个可以独立发生的触摸事件：`TOUCH_TAP` 和 `TOUCH_SWIPE`。
+一次 `TOUCH_TAP` 会触发 `TOUCH_START` → `TOUCH_END` 的事件流。
+如果用户连续点按，只会触发一次 `TOUCH_TAP` 事件，并带上用户点按了多少次的计数。
 
-| EVENT                  | 描述                                                                                                                                                                                              |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `TOUCH_START`          | 当用户放下接触点时触发。                                                                                                                                                                           |
-| `TOUCH_START_ACTIVATE` | 只有在没有工具决定阻止`TOUCH_START`事件的传播时才触发。它用于区分触摸现有注解和需要创建新注解。                                                                    |
-| `TOUCH_PRESS`          | 如果用户放下触控点并在>700ms内没有移动，则触发。                                                                                                                                                   |
-| `TOUCH_DRAG`           | 任何时候用户移动接触点时触发，可能发生在`TOUCH_PRESS`之前，因为`TOUCH_PRESS`事件将容忍一些移动。                                                                |
-| `TOUCH_END`            | 当用户抬起一个或多个接触点时触发。                                                                                                                                                                   |
-| `TOUCH_TAP`            | 当用户在`300ms`内与屏幕接触并在`TOUCH_START`后在画布上移动小于`48px`时触发。                                                                                      |
-| `TOUCH_SWIPE`          | 当用户在单个拖动周期内移动超过`48px`并在触摸屏幕后小于`200ms`时触发。                                                                                           |
+`TOUCH_SWIPE` 事件在用户于单次拖拽周期内、在画布上移动超过 `48px` 时发生。
+此外，`TOUCH_SWIPE` 只有在触屏后最初 `200ms` 内发生该移动时才会被激活。
+如果用户沿对角线移动，则 `LEFT`/`RIGHT` 和 `UP`/`DOWN` 两个方向的滑动都会触发。
 
-## 多点触摸
+| 事件                   | 说明                                                                                                     |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- |
+| `TOUCH_START`          | 用户按下触点时触发。                                                                                      |
+| `TOUCH_START_ACTIVATE` | 仅当没有任何工具决定阻止 `TOUCH_START` 事件传播时才触发。它有助于区分「触摸了已有标注」与「需要创建新标注」。 |
+| `TOUCH_PRESS`          | 用户按下触点并保持不动超过 700ms 时触发。                                                                  |
+| `TOUCH_DRAG`           | 用户移动触点时随时触发；由于 `TOUCH_PRESS` 事件容许一定的移动量，它可能在 `TOUCH_PRESS` 之前发生。          |
+| `TOUCH_END`            | 用户抬起一个或多个触点时触发。                                                                            |
+| `TOUCH_TAP`            | 用户与屏幕接触时间少于 `300ms`、且相对 `TOUCH_START` 的移动少于画布 `48px` 时触发。                        |
+| `TOUCH_SWIPE`          | 用户在单次拖拽周期内移动超过 `48px`、且发生在触屏后 `200ms` 之内时触发。                                    |
 
-触摸事件本身支持多点触摸，以[`ITouchPoints[]`](https://www.cornerstonejs.org/docs/api/tools/namespace/Types#ITouchPoints)提供。
-为了使触摸事件与鼠标事件兼容，这些`ITouchPoints[]`需要被简化为一个
-`ITouchPoint`。当前的数组简化策略是取平均坐标值。可以实现其他策略，如第一个点、中位数点等。这可以在
-[`touch` utilities codebase](https://github.com/cornerstonejs/cornerstone3D/main/packages/tools/src/utilities/touch/index.ts)实现。
+## 多点触控 {#multitouch}
 
-`ITouchPoints`的结构如下：
+触摸事件原生支持多点触控，它以
+[`ITouchPoints[]`](https://www.cornerstonejs.org/docs/api/tools/namespaces/Types/interfaces/ITouchPoints)
+列表的形式提供。为了让触摸事件能与鼠标事件兼容，
+这些 `ITouchPoints[]` 需要被归约为单个 `ITouchPoint`。
+当前的数组归约策略是取各坐标值的平均值。也可以实现其他策略，
+例如取第一个点、取中位点等，实现位置在
+[`touch` 工具函数代码](https://github.com/cornerstonejs/cornerstone3D/main/packages/tools/src/utilities/touch/index.ts)中。
+
+`ITouchPoints` 的结构如下：
 
 ```js
 type ITouchPoints = {
-  /** 点的页面坐标 */
+  /** 该点的 page 坐标 */
   page: Types.Point2,
-  /** 点的客户端坐标 */
+  /** 该点的 client 坐标 */
   client: Types.Point2,
-  /** 点的画布坐标 */
+  /** 该点的画布坐标 */
   canvas: Types.Point2,
-  /** 点的世界坐标 */
+  /** 该点的世界坐标 */
   world: Types.Point3,
 
-  /** 原生触摸对象属性，这些属性是可JSON序列化的 */
+  /** 原生 Touch 对象中可被 JSON 序列化的那些属性 */
   touch: {
     identifier: string,
     radiusX: number,
@@ -61,88 +79,89 @@ type ITouchPoints = {
 };
 ```
 
-## 多点触摸拖拽计算
+## 多点触控的拖拽计算 {#multitouch-drag-calculations}
 
-`TOUCH_DRAG`事件具有以下结构：
+`TOUCH_DRAG` 事件的结构如下：
 
 ```js
 type TouchDragEventDetail = NormalizedTouchEventDetail & {
-  /** 触摸事件的起始点。 */
+  /** 该触摸事件的起始点。 */
   startPoints: ITouchPoints,
-  /** 触摸的最后一点。 */
+  /** 触摸的上一组点。 */
   lastPoints: ITouchPoints,
   /** 当前的触摸位置。 */
   currentPoints: ITouchPoints,
   startPointsList: ITouchPoints[],
-  /** 触摸的最后一点。 */
+  /** 触摸的上一组点。 */
   lastPointsList: ITouchPoints[],
   /** 当前的触摸位置。 */
   currentPointsList: ITouchPoints[],
 
-  /** 当前点和最后一点之间的差异。 */
+  /** 当前点与上一组点之间的差值。 */
   deltaPoints: IPoints,
-  /** 当前点和最后一点之间的距离差异。 */
+  /** 当前点与上一组点各自点间距之间的差值。 */
   deltaDistance: IDistance,
 };
 ```
 
-`deltaPoints`是`lastPointsList`的平均坐标点与`currentPointsList`之间的差异。
-`deltaDistance`是`lastPointsList`与`currentPointsList`中点之间平均距离的差异。
+`deltaPoints` 是 `lastPointsList` 与 `currentPointsList` 各自平均坐标点之间的差值。
+`deltaDistance` 是 `lastPointsList` 与 `currentPointsList` 中点间平均距离之间的差值。
 
-## 用法
+## 用法 {#usage}
 
-您可以为事件向元素添加事件监听器。
+可以给元素添加对应事件的监听器。
 
 ```js
 import Events from '@cornerstonejs/tools/enums/Events';
-// element是cornerstone视域元素
+// element 是 cornerstone 的视口元素
 element.addEventListener(Events.TOUCH_DRAG, (evt) => {
-  // 我在拖动时的函数
+  // 拖拽时执行我的函数
   console.log(evt);
 });
 
 element.addEventListener(Events.TOUCH_SWIPE, (evt) => {
-  // 我在滑动时的函数
+  // 滑动时执行我的函数
   console.log(evt);
 });
 
-// 在部署的OHIF应用程序中通过chrome控制台
+// 在已部署的 OHIF 应用中，于 chrome 控制台里
 cornerstone
   .getEnabledElements()[0]
   .viewport.element.addEventListener(Events.TOUCH_SWIPE, (evt) => {
-    // 我在滑动时的函数
+    // 滑动时执行我的函数
     console.log('SWIPE', evt);
   });
 ```
 
-可以通过运行 `yarn run example stackManipulationToolsTouch` 找到完整示例，其源代码位于[此处](https://github.com/gradienthealth/cornerstone3D/blob/gradienthealth/added_touch_events/packages/tools/examples/stackManipulationToolsTouch/index.ts)。
+完整示例可以通过运行 `yarn run example stackManipulationToolsTouch` 查看，
+其源码在[这里](https://github.com/gradienthealth/cornerstone3D/blob/gradienthealth/added_touch_events/packages/tools/examples/stackManipulationToolsTouch/index.ts)。
 
-## 绑定
+## 绑定 {#binding}
 
-触摸工具根据放下的指针数量有绑定。
-未来，绑定可以基于力度以及半径（笔的检测）进行筛选。
-`numTouchPoints`可以是硬件支持的任意数量。
+触摸类工具的绑定取决于按下的触点数量。将来绑定还可以按压力大小
+以及触点半径（用于识别触控笔）来筛选。`numTouchPoints`
+可以多到硬件所支持的上限。
 
 ```js
-// 向Cornerstone3D添加工具
+// 把工具添加到 Cornerstone3D
 cornerstoneTools.addTool(PanTool);
 cornerstoneTools.addTool(WindowLevelTool);
 cornerstoneTools.addTool(StackScrollTool);
 cornerstoneTools.addTool(ZoomTool);
 
-// 定义工具组，它定义鼠标事件如何映射到工具命令中，
-// 任何使用该组的视口
+// 定义一个工具组，它决定了对使用该组的任何视口而言，
+// 鼠标事件如何映射到工具命令
 const toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
 
-// 将工具添加到工具组中
+// 把工具加入工具组
 toolGroup.addTool(WindowLevelTool.toolName);
 toolGroup.addTool(PanTool.toolName);
 toolGroup.addTool(ZoomTool.toolName);
 toolGroup.addTool(StackScrollTool.toolName);
 
-// 设置工具的初始状态，在此所有工具都是激活并绑定到
-// 不同的触摸输入
-// 5个触摸点是可能的 => 支持不限数量的触摸点，但通常受硬件限制。
+// 设置这些工具的初始状态。这里所有工具都是激活的，
+// 并分别绑定到不同的触摸输入上。
+// 这里写了 5 个触点 => 触点数量本身不受限制，但通常受硬件限制。
 toolGroup.setToolActive(ZoomTool.toolName, {
   bindings: [{ numTouchPoints: 2 }],
 });
@@ -158,54 +177,59 @@ toolGroup.setToolActive(WindowLevelTool.toolName, {
 });
 ```
 
-`MouseBindings.Primary`是一种特殊的绑定类型，将自动绑定单指触摸。
+`MouseBindings.Primary` 是一种特殊的绑定类型，它会自动绑定单指触摸。
 
-## 触摸与鼠标事件类比
+## 触摸事件与鼠标事件的对应关系 {#touch-and-mouse-event-analogs}
 
-触摸和鼠标事件有很多重叠的继承关系。大多数触摸事件都有一个鼠标事件类比。见下表：
+触摸事件与鼠标事件在继承关系上有大量重叠。大多数触摸事件都有对应的鼠标事件，
+见下表：
 
-| 触摸事件              | 鼠标事件               |
+| 触摸事件               | 鼠标事件              |
 | ---------------------- | --------------------- |
 | `TOUCH_START`          | `MOUSE_DOWN`          |
 | `TOUCH_START_ACTIVATE` | `MOUSE_DOWN_ACTIVATE` |
-| `TOUCH_PRESS`          | N/A                   |
+| `TOUCH_PRESS`          | 无                    |
 | `TOUCH_DRAG`           | `MOUSE_DRAG`          |
-| `TOUCH_SWIPE`          | N/A                   |
+| `TOUCH_SWIPE`          | 无                    |
 | `TOUCH_END`            | `MOUSE_UP`            |
 | `TOUCH_TAP`            | `MOUSE_CLICK`         |
 
-触摸事件与鼠标事件的主要区别在于触摸事件可以有多个指针（多点触摸）。触摸事件将自动将多个指针简化为一个单点值。默认情况下，这些点的简化方法是取加权平均值。这个简化的点可以用作`IPoints`或`ITouchPoints`，是否需要触摸信息取决于具体情况。
+触摸事件与鼠标事件的主要区别在于：触摸事件可以有多个触点（多点触控）。
+触摸事件会自动把多个触点归约为单个点值，默认的归约方式是取加权平均。
+归约出来的这个点，可以按是否需要触摸相关信息，作为 `IPoints`
+或 `ITouchPoints` 使用。
 
-如果需要多个触摸点，可以以列表形式访问。
+如果确实需要多个触点，它们也能以列表形式取用。
 
 ```js
 type MousePointsDetail = {
-  /** 鼠标事件的起始点。 */
+  /** 该鼠标事件的起始点。 */
   startPoints: IPoints,
-  /** 鼠标的最后一点。 */
+  /** 鼠标的上一组点。 */
   lastPoints: IPoints,
-  /** 当前鼠标位置。 */
+  /** 当前的鼠标位置。 */
   currentPoints: IPoints,
-  /** 当前点和最后一点之间的差异。 */
+  /** 当前点与上一组点之间的差值。 */
   deltaPoints: IPoints,
 };
 
 type TouchPointsDetail = {
-  /** 触摸事件的起始点。 */
+  /** 该触摸事件的起始点。 */
   startPoints: ITouchPoints,
-  /** 触摸的最后一点。 */
+  /** 触摸的上一组点。 */
   lastPoints: ITouchPoints,
-  /** 当前触摸位置。 */
+  /** 当前的触摸位置。 */
   currentPoints: ITouchPoints,
 
   startPointsList: ITouchPoints[],
-  /** 触摸的最后一点。 */
+  /** 触摸的上一组点。 */
   lastPointsList: ITouchPoints[],
-  /** 当前触摸位置。 */
+  /** 当前的触摸位置。 */
   currentPointsList: ITouchPoints[],
 
-  /** 当前点和最后一点之间的差异。 */
+  /** 当前点与上一组点之间的差值。 */
   deltaPoints: IPoints,
-  /** 当前点和最后一点之间的距离差异。 */
+  /** 当前点与上一组点各自点间距之间的差值。 */
   deltaDistance: IDistance,
 };
+```

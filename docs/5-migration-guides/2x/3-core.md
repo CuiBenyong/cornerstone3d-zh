@@ -1,46 +1,62 @@
----  
-id: core  
-title: '@cornerstonejs/core'  
----  
+---
+id: core
+title: "@cornerstonejs/core"
+description: 从 1.x 升级到 2.x 时 core 包的全部变更。涵盖初始化时移除 detect-gpu、体数据视口 actor UID 与 referencedId 的区分、视口 API 的调整、新的像素数据模型与 VoxelManager、volumeLoader 各函数的签名变化、targetBufferType 改为 targetBuffer 对象、Cache 类的更新，以及枚举与事件的重命名。
+keywords:
+  - "@cornerstonejs/core"
+  - detect-gpu
+  - gpuTier
+  - referencedId
+  - getVolumeId
+  - VoxelManager
+  - targetBuffer
+  - createAndCacheDerivedLabelmapVolume
+  - VIEWPORT_NEW_IMAGE_SET
+  - Cornerstone3D 2.x 迁移
+upstream: https://www.cornerstonejs.org/docs/migration-guides/2x/core
+---
 
-import Tabs from '@theme/Tabs';  
-import TabItem from '@theme/TabItem';  
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-# @cornerstonejs/core
+# @cornerstonejs/core {#cornerstonejscore}
 
-## 初始化
+## 初始化 {#initialization}
 
-### 移除 `detect-gpu` 和 `detectGPUConfig`
+### 移除 `detect-gpu` 与 `detectGPUConfig` {#removal-of-detect-gpu-and-detectgpuconfig}
 
-Cornerstone3D 2.x 版本已经移除了对 `detect-gpu` 的依赖。此更改解决了在互联网访问受限的环境中使用者所报告的问题，因为 `detect-gpu` 依赖于互联网连接来确定 GPU 型号。
+Cornerstone3D 2.x 移除了对 `detect-gpu` 的依赖。这解决了那些在受限网络环境中
+工作的用户所反馈的问题——因为 `detect-gpu` 需要联网才能判断 GPU 型号。
 
-#### 主要更改：
+#### 主要变更 {#key-changes}
 
-1. **默认 GPU 层级**：我们现在使用默认的 GPU 层级 2（中等层级）。
-2. **无互联网依赖**：该库不再需要互联网连接来检测 GPU。
-3. **可配置 GPU 层级**：如果需要，您仍然可以配置自定义 GPU 层级。
+1. **默认 GPU 档位**：我们现在使用默认的 GPU 档位 2（中档）。
+2. **不再依赖联网**：该库不再需要联网来做 GPU 检测。
+3. **GPU 档位可配置**：如有需要，你仍然可以自行配置 GPU 档位。
 
-#### 如何迁移：
+#### 如何迁移 {#how-to-migrate}
 
-如果您之前依赖 `detect-gpu` 来检测 GPU 层级，您需要更新您的初始化代码。以下是如何使用自定义 GPU 层级初始化 Cornerstone3D 的示例：
+如果你此前依赖 `detect-gpu` 来检测 GPU 档位，就需要更新初始化代码。
+下面是以自定义 GPU 档位初始化 Cornerstone3D 的例子：
 
 ```js
 cornerstone3D.init({ gpuTier: 3 });
 ```
 
-### 移除 `use16BitDataType`
+### 移除 `use16BitDataType` {#removal-of-use16bitdatatype}
 
-此标志要求从 web worker 获取 16 位数据类型。现在，我们始终使用原生数据类型进行缓存存储，并在必要时进行渲染时转换。
+这个标志原本用来向 Web Worker 请求 16 位数据类型。
+现在我们缓存时一律使用原生数据类型，需要渲染时再做转换。
 
-### 移除 `enableCacheOptimization`
+### 移除 `enableCacheOptimization` {#removal-of-enablecacheoptimization}
 
-此功能不再需要，因为我们会自动为您优化缓存。
+不再需要它了，因为我们会自动为你优化缓存。
 
-## Volume Viewports Actor UID、ReferenceId 和 VolumeId
+## 体数据视口的 Actor UID、ReferenceId 与 VolumeId {#volume-viewports-actor-uid-referenceid-and-volumeid}
 
-### 以前的行为
+### 此前的行为 {#previous-behavior}
 
-在将一个体积添加到体积视口时，用来确定演员 UID 的逻辑如下：
+以前给体数据视口添加体数据时，确定 actor UID 的逻辑是这样的：
 
 ```js
 const uid = actorUID || volumeId;
@@ -52,11 +68,15 @@ volumeActors.push({
 });
 ```
 
-在这种设置中，演员的 UID 和 `referenceId` 都被设置为 `volumeId`。这是有问题的，因为它会创建具有相同 UID 的演员，即使它们本应是唯一的。在代码库中，我们依赖 `actor.uid` 从缓存中获取体积，这进一步导致了混乱。
+在这套写法里，actor UID 和 `referenceId` 都被设成了 `volumeId`。
+这是有问题的：它会创建出 UID 完全相同的 actor，
+而它们本该各自唯一。而且代码库中到处依赖 `actor.uid` 去缓存里取体数据，
+这就更让人困惑了。
 
-### 更新后的行为
+### 更新后的行为 {#updated-behavior}
 
-我们对逻辑进行了以下更改，以提高清晰度和功能性。现在，演员 UID 是独立的，使用以下逻辑：
+我们做了下面这些改动，以提升清晰度和功能性。actor UID 现在是独立的，
+逻辑如下：
 
 ```js
 const uid = actorUID || uuidv4();
@@ -68,18 +88,25 @@ volumeActors.push({
 });
 ```
 
-### 主要更改
+### 主要变更 {#key-changes-1}
 
-1. **唯一的演员 UID**：演员 UID 现在始终是唯一的标识符（`uuidv4()`），而 `referencedId` 被设置为 `volumeId`。如果您的代码依赖于 `actor.uid` 来获取体积，您现在应使用 `referencedId` 或新的 `viewport.getVolumeId()` 方法来获取 `volumeId`，这是推荐的方式。
-   
-2. **将 `referenceId` 重命名为 `referencedId`**：为了提高清晰度，`referenceId` 被重命名为 `referencedId`。此更改与我们库中的命名约定一致，例如 `referencedImageId` 和 `referencedVolumeId`。由于演员可以来源于体积或图像，使用 `referencedId` 更准确地描述了它的作用。
+1. **actor UID 唯一**：actor UID 现在始终是一个唯一标识（`uuidv4()`），
+   而 `referencedId` 被设为 `volumeId`。如果你的代码原先依赖 `actor.uid`
+   去取体数据，现在应改用 `referencedId`，或者用新的
+   `viewport.getVolumeId()` 方法来取 `volumeId`——后者是推荐做法。
 
-这些更改应使逻辑更加清晰，并防止出现重复 UID 的问题。
+2. **`referenceId` 改名为 `referencedId`**：为提升清晰度，
+   `referenceId` 改名为 `referencedId`。这与我们库中的命名约定一致，
+   例如 `referencedImageId` 和 `referencedVolumeId`。
+   由于一个 actor 既可能派生自体数据、也可能派生自影像，
+   用 `referencedId` 能更准确地描述它的作用。
 
-### 迁移
+这些改动应该能让逻辑更易理解，也避免 UID 重复带来的问题。
 
-<Tabs>  
-  <TabItem value="Before" label="之前 📦 " default>
+### 迁移做法 {#migrations}
+
+<Tabs>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```js
 const defaultActor = viewport.getDefaultActor();
@@ -87,71 +114,71 @@ const volumeId = defaultActor.uid;
 const volume = cache.getVolume(volumeId);
 ```
 
-或
+或者
 
 ```js
 volumeId = viewport.getDefaultActor()?.uid;
 cache.getVolume(volumeId)?.metadata.Modality;
 ```
 
-或
+或者
 
 ```js
 const { uid: volumeId } = viewport.getDefaultActor();
 ```
 
-  </TabItem>  
-  <TabItem value="After" label="之后 🚀🚀">
+  </TabItem>
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```js
 const volume = cache.getVolume(viewport.getVolumeId());
 ```
 
-  </TabItem>  
+  </TabItem>
 </Tabs>
 
-## Viewport API
+## 视口 API {#viewport-apis}
 
-### ImageDataMetaData
+### ImageDataMetaData {#imagedatametadata}
 
-<Tabs>  
-  <TabItem value="Before" label="之前 📦 " default>
+<Tabs>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```js
 interface ImageDataMetaData {
-  // ... 其他属性
+  // ……其他属性
   numComps: number;
-  // ... 其他属性
+  // ……其他属性
 }
 ```
 
-  </TabItem>  
-  <TabItem value="After" label="之后 🚀🚀">
+  </TabItem>
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```js
 export interface ImageDataMetaData {
-  // ... 其他属性
+  // ……其他属性
   numberOfComponents: number;
-  // ... 其他属性
+  // ……其他属性
 }
 ```
 
-  </TabItem>  
+  </TabItem>
 </Tabs>
 
-### 重置相机
+### 重置相机 {#reset-camera}
 
-之前，我们有一个 `resetCamera` 方法，它接受位置参数。现在它接受一个对象参数。
+以前 `resetCamera` 方法接收的是位置参数，现在改为接收一个对象参数。
 
-<Tabs>  
-  <TabItem value="Before" label="之前 📦 " default>
+<Tabs>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```js
 viewport.resetCamera(false, true, false);
 ```
 
-  </TabItem>  
-  <TabItem value="After" label="之后 🚀🚀">
+  </TabItem>
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```js
 viewport.resetCamera({
@@ -161,165 +188,157 @@ viewport.resetCamera({
 });
 ```
 
-  </TabItem>  
+  </TabItem>
 </Tabs>
 
-### 旋转
+### 旋转 {#rotation}
 
-`rotation` 属性已从 `getProperties` 和 `setProperties` 中移除，转移到了 `getViewPresentation` 和 `setViewPresentation` 或 `getCamera` 和 `setCamera` 中。
+`rotation` 属性已从 `getProperties` 和 `setProperties` 中移除，
+转移到了 `getViewPresentation` / `setViewPresentation`，
+或 `getCamera` / `setCamera` 上。
 
-<Tabs>  
-  <TabItem value="Before" label="之前 📦 " default>
+<Tabs>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```js
 viewport.getProperties().rotation;
 viewport.setProperties({ rotation: 10 });
 ```
 
-  </TabItem>  
-  <TabItem value="After" label="之后 🚀🚀">
+  </TabItem>
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```js
 const { rotation } = viewport.getViewPresentation();
 
-// 或
+// 或者
 
 const { rotation } = viewport.getCamera();
 
 viewport.setViewPresentation({ rotation: 10 });
 
-// 或
+// 或者
 
 viewport.setCamera({ rotation: 10 });
 ```
 
-  </TabItem>  
+  </TabItem>
 </Tabs>
 
-<details>  
-<summary>为什么？</summary>  
+<details>
+<summary>为什么？</summary>
 
-`rotation` 不是视口的一个属性，而是视图的一个属性。现在您可以通过 `getViewPresentation` 来访问它。
+`rotation` 不是视口的属性，而是视图层面的属性。
+现在可以通过 `getViewPresentation` 访问它。
 
 </details>
 
-### getReferenceId
+### getReferenceId {#getreferenceid}
 
-`getReferenceId` 现在改为 `getViewReferenceId`
+`getReferenceId` 现在叫 `getViewReferenceId`。
 
 ```js
 viewport.getReferenceId() -- > viewport.getViewReferenceId();
 ```
 
-<details>  
-<summary>为什么？</summary>  
+<details>
+<summary>为什么？</summary>
 
-使用 `getViewReferenceId` 更准确地反映了该方法的实际功能，因为它返回的是特定视图的信息，而不是演员引用。
+用 `getViewReferenceId` 更准确地反映了该方法的实际作用——
+它返回的是视图相关的信息，而不是关于 actor 引用的信息。
 
 </details>
 
-## 新的 PixelData 模型和 VoxelManager
+## 新的像素数据模型与 VoxelManager {#new-pixeldata-model-and-voxelmanager}
 
-Cornerstone 库在处理图像体积和纹理管理方面进行了重大更改。这些更改旨在提高性能、减少内存使用，并提供更高效的数据访问，特别是对于大型数据集。
+Cornerstone 库在「如何处理影像体数据与纹理管理」这件事上做了重大改动。
+这些改动的目标是提升性能、降低内存占用、并提供更高效的数据访问——
+对大型数据集尤其如此。
 
-1. 单一的数据来源
+1. 唯一可信来源
+   - 以前：数据同时存在于影像缓存和体数据缓存中，会带来同步问题。
+   - 现在：只有一个可信来源——影像缓存。
+   - 好处：堆栈分割与体数据分割之间的同步得到改善。
 
-   - 之前：数据同时存在于图像缓存和体积缓存中，导致同步问题。
-   - 现在：只有一个数据来源——图像缓存。
-   - 好处：提高了堆栈和体积分割之间的同步。
+2. 新的体数据创建方式
+   - 现在一切都以影像的形式加载。
+   - 体数据的流式加载是逐张影像进行的。
+   - 只有影像会被缓存进影像缓存。
+   - 做体数据渲染时，数据直接从影像缓存进入 GPU，绕过 CPU 端的标量数据。
+   - 好处：不再需要在 CPU 中保留标量数据，内存占用下降，性能提升。
 
-2. 新的体积创建方式
+3. 面向工具的 VoxelManager
+   - 充当索引与标量数据之间的中间层。
+   - 提供从 IJK 到索引的映射器。
+   - 在不创建标量数据的前提下取得所需信息。
+   - 逐张影像分别处理。
+   - 好处：高效支持那些需要在 CPU 中拿到像素数据的工具。
 
-   - 现在所有内容都以图像形式加载。
-   - 体积流式传输按图像逐个进行。
-   - 只有图像被缓存到图像缓存中。
-   - 对于体积渲染，数据直接从图像缓存传输到 GPU，跳过 CPU 标量数据。
-   - 好处：消除了 CPU 中标量数据的需求，减少了内存使用，提高了性能。
+4. 处理非影像类体数据
+   - 没有影像的体数据（例如 NIfTI）会被切分并转换为堆栈形式。
+   - 这让非影像类体数据也能适配新的「以影像为单位」的方案。
 
-3. VoxelManager 为工具提供支持
+5. 优化后的缓存机制
+   - 数据以其原生格式存储，而不再一律缓存为 float32。
+   - 更新 GPU 纹理时再即时转换为所需格式。
+   - 好处：内存占用下降，省掉了不必要的数据类型转换。
 
-   - 作为索引和标量数据之间的中介。
-   - 提供从 IJK 到索引的映射。
-   - 在不创建标量数据的情况下获取信息。
-   - 每个图像单独处理。
-   - 好处：高效处理需要 CPU 中像素数据的工具。
-
-4. 处理非图像体积
-
-   - 没有图像的体积（如 NIFTI）被切割并转换为堆栈格式。
-   - 使得非图像体积与新的基于图像的方式兼容。
-
-5. 优化的缓存机制
-
-   - 数据以原生格式存储，而不是总是缓存为 float32。
-   - 更新 GPU 纹理时按需转换为所需格式。
-   - 好处：减少内存使用，消除了不必要的数据类型转换。
-
-6. 消除 SharedArrayBuffer
-
+6. 去掉 SharedArrayBuffer
    - 移除了对 SharedArrayBuffer 的依赖。
-   - 每个解码后的图像直接进入 GPU 3D 纹理，按正确的大小和位置放置。
-   - 好处：减少了安全限制，简化了 Web Worker 的实现。
+   - 每张解码后的影像直接以正确的尺寸和位置进入 GPU 的三维纹理。
+   - 好处：安全限制减少，Web Worker 的实现得以简化。
 
 **结果**
 
-- 流程简化，数据从图像缓存直接传输到 GPU。
-- 提高了内存使用和性能。
-- 增强了对各种体积格式的兼容性。
-- 优化了图像和体积处理的整体系统架构。
-- 简化了 Web Worker 实现（现在只需要 ArrayBuffer）。
+- 数据流从影像缓存直达 GPU，链路更顺。
+- 内存占用与性能都有改善。
+- 对各类体数据格式的兼容性更好。
+- 影像与体数据处理的整体系统架构得到优化。
+- Web Worker 的实现被简化（现在 ArrayBuffer 就够了）。
 
-### 引入 VoxelManager
+### VoxelManager 的引入 {#introduction-of-voxelmanager}
 
-引入了一个新的 `VoxelManager`
-
- 类，用于管理和组织体积数据。此类负责提供有效的体积访问，同时处理渲染、处理、存储的所有细节。
-
-```js
-const voxelManager = new VoxelManager({
-  volumeId,
-  imageData: imageData,
-});
-```
+新增了一个 `VoxelManager` 类来更高效地处理体素数据。
+这项改动使我们不必再为体数据分配大型标量数据数组，
+而是依赖单张影像加上一个名为 VoxelManager 的适配器。
 
 **迁移步骤：**
 
-1. 使用 `VoxelManager` 方法替换直接的标量数据访问：
+1. 把直接访问标量数据改为调用 `VoxelManager` 的方法：
 
-   不再使用 `volume.getScalarData()`，改用 `volume.voxelManager` 来与数据交互。
+   不要再用 `volume.getScalarData()`，改用 `volume.voxelManager` 来与数据交互。
 
 2. 标量数据长度：
 
-   使用 `voxelManager.getScalarDataLength()` 替代 `scalarData.length`。
+   用 `voxelManager.getScalarDataLength()` 替代 `scalarData.length`。
 
-3. 标量数据操作：
+3. 标量数据的操作：
 
-   a. 使用 `getAtIndex(index)` 和 `setAtIndex(index, value)` 来访问和修改体素数据。
+   a. 用 `getAtIndex(index)` 和 `setAtIndex(index, value)` 访问和修改体素数据。
 
-   b. 对于 3D 坐标，使用 `getAtIJK(i, j, k)` 和 `setAtIJK(i, j, k, value)`。
+   b. 对三维坐标，用 `getAtIJK(i, j, k)` 和 `setAtIJK(i, j, k, value)`。
 
-4. 可用的 VoxelManager 方法：
-
-   - `getScalarData()`：返回整个标量数据数组（仅对 IImage 有效，不适用于体积）。
-   - `getScalarDataLength()`：返回体素的总数。
-   - `getAtIndex(index)`：获取特定索引处的值。
-   - `setAtIndex(index, value)`：设置特定索引处的值。
-   - `getAtIJK(i, j, k)`：获取特定 IJK 坐标处的值。
-   - `setAtIJK(i, j, k, value)`：设置特定 IJK 坐标处的值。
-   - `getArrayOfModifiedSlices()`：返回已修改切片的索引数组。
-   - `forEach(callback, options)`：使用回调函数迭代体素。
+4. VoxelManager 可用的方法：
+   - `getScalarData()`：返回整个标量数据数组（仅适用于 IImage，不适用于体数据）。
+   - `getScalarDataLength()`：返回体素总数。
+   - `getAtIndex(index)`：取得指定索引处的取值。
+   - `setAtIndex(index, value)`：设置指定索引处的取值。
+   - `getAtIJK(i, j, k)`：取得指定 IJK 坐标处的取值。
+   - `setAtIJK(i, j, k, value)`：设置指定 IJK 坐标处的取值。
+   - `getArrayOfModifiedSlices()`：返回被修改过的切片索引数组。
+   - `forEach(callback, options)`：带回调函数地遍历体素。
    - `getConstructor()`：返回标量数据类型的构造函数。
-   - `getBoundsIJK()`：返回体积在 IJK 坐标中的边界。
-   - `toIndex(ijk)`：将 IJK 坐标转换为线性索引。
-   - `toIJK(index)`：将线性索引转换为 IJK 坐标。
+   - `getBoundsIJK()`：返回该体数据在 IJK 坐标下的边界。
+   - `toIndex(ijk)`：把 IJK 坐标转换为线性索引。
+   - `toIJK(index)`：把线性索引转换为 IJK 坐标。
 
-5. 处理已修改的切片：
+5. 处理被修改过的切片：
 
-   使用 `voxelManager.getArrayOfModifiedSlices()` 获取已修改切片的列表。
+   用 `voxelManager.getArrayOfModifiedSlices()` 取得被修改切片的列表。
 
-6. 迭代体素：
+6. 遍历体素：
 
-   使用 `forEach` 方法进行高效的迭代：
+   用 `forEach` 方法做高效遍历：
 
    ```javascript
    voxelManager.forEach(
@@ -333,33 +352,31 @@ const voxelManager = new VoxelManager({
    );
    ```
 
-7. 获取体积信息：
-
-   - 尺寸：`volume.dimensions`
+7. 取得体数据信息：
+   - 维度：`volume.dimensions`
    - 间距：`volume.spacing`
    - 方向：`volume.direction`
    - 原点：`volume.origin`
 
-8. 对于 RGB 数据：
+8. 对 RGB 数据：
 
-   如果处理 RGB 数据，`getAtIndex` 和 `getAtIJK` 方法将返回一个数组 `[r, g, b]`。
+   处理 RGB 数据时，`getAtIndex` 和 `getAtIJK` 方法返回的是数组 `[r, g, b]`。
 
-9. 性能考虑：
+9. 性能方面的考虑：
+   - 批量操作时尽量用 `getAtIndex` 和 `setAtIndex`，
+     它们通常比 `getAtIJK` 和 `setAtIJK` 更快。
+   - 要遍历体数据中较大一部分时，可以考虑用 `forEach` 以获得更优性能。
 
-   - 当可能时，使用 `getAtIndex` 和 `setAtIndex` 进行批量操作，因为它们通常比 `getAtIJK` 和 `setAtIJK` 更快。
-   - 当迭代大部分体积时，考虑使用 `forEach` 来优化性能。
+10. 动态体数据：
 
-10. 动态体积：
-
-    对于 4D 数据集，提供了额外的方法：
-
+    对四维数据集，还有额外的方法可用：
     - `setTimePoint(timePoint)`：设置当前时间点。
-    - `getAtIndexAndTimePoint(index, timePoint)`：获取特定索引和时间点的值。
+    - `getAtIndexAndTimePoint(index, timePoint)`：取得指定索引与时间点处的取值。
 
-迁移一个简单体积处理函数的示例：
+一个简单的体数据处理函数的迁移示例：
 
 <Tabs>
-  <TabItem value="Before" label="之前 📦 " default>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```javascript
 function processVolume(volume) {
@@ -373,7 +390,7 @@ function processVolume(volume) {
 ```
 
   </TabItem>
-  <TabItem value="After" label="之后 🚀🚀">
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```javascript
 function processVolume(volume) {
@@ -391,36 +408,45 @@ function processVolume(volume) {
   </TabItem>
 </Tabs>
 
-通过遵循这些扩展的迁移步骤并充分利用 `VoxelManager` 的功能，您可以高效地处理体积数据，同时享受新系统带来的性能提升和内存使用减少。
+按上面这些扩展后的迁移步骤来做、并充分利用 VoxelManager 的能力，
+你就能高效地处理体数据，同时享受到新系统带来的性能提升与内存占用下降。
 
-**体积（IImageVolume）的迁移步骤：**
+**体数据（IImageVolume）的迁移步骤：**
 
-1. 在处理体积数据时，搜索您的自定义代码库中的 `getScalarData` 或 `scalarData`。改为使用 `voxelManager` 来访问标量数据 API。
+1. 处理体数据时，在你自己的代码库里搜索 `getScalarData` 或 `scalarData`。
+   改用 `voxelManager` 提供的标量数据 API。
 
 :::info
-如果无法通过 `getAtIndex` 和 `getAtIJK` 使用原子数据 API，您可以回退到使用 `voxelManager.getCompleteScalarDataArray()` 来重新构建完整的标量数据数组，像在 cornerstone3D 1.0 中那样。然而，由于性能和内存方面的考虑，这并不推荐，仅在最后的情况下使用。
+如果你无法使用 `getAtIndex` 和 `getAtIJK` 这种逐个取值的 API，
+可以退而使用 `voxelManager.getCompleteScalarDataArray()`
+来像 cornerstone3D 1.0 那样重建出完整的标量数据数组。
+但出于性能和内存方面的考虑，并不推荐这么做，只应作为最后手段。
 
-您也可以使用 `.setCompleteScalarDataArray`。
+同理也可以用 `.setCompleteScalarDataArray`。
 :::
 
-**堆栈图像（IImage）的迁移步骤：**
+**堆栈影像（IImage）的迁移步骤：**
 
-1. 对于堆栈图像，变化不大，您仍然可以使用 `image.getPixelData()` 或通过 `image.voxelManager.getScalarData()` 访问标量数据数组。
+1. 堆栈影像这边变化不大，你仍然可以用 `image.getPixelData()`，
+   或者通过 `image.voxelManager.getScalarData()` 访问标量数据数组。
 
 :::info
-仅对体积而言，没有直接的 `scalarData` 数组。请使用 `voxelManager` 来访问标量数据（通过索引或 IJK 坐标）。单个图像的标量数据操作保持不变。
+**只有**体数据没有直接的 `scalarData` 数组，需要改用 `voxelManager`
+按索引或 IJK 访问标量数据。单张影像的标量数据操作方式保持不变。
 :::
 
-### 图像体积构建
+### 影像体数据的构建 {#image-volume-construction}
 
-图像体积的构建已经更新为使用 `VoxelManager` 和新属性，消除了大规模标量数据数组的需求。
+影像体数据的构建方式已更新为使用 `VoxelManager` 和新的属性，
+不再需要大型标量数据数组。
 
 :::info
-如前所述，体积对象中没有 `scalarData` 数组，`imageIds` 足以描述体积。
+如前所述，体数据对象里没有 scalarData 数组，
+用 imageIds 就足以描述这份体数据了。
 :::
 
 <Tabs>
-  <TabItem value="Before" label="之前 📦 " default>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```typescript
 const streamingImageVolume = new StreamingImageVolume({
@@ -437,7 +463,7 @@ const streamingImageVolume = new StreamingImageVolume({
 ```
 
   </TabItem>
-  <TabItem value="After" label="之后 🚀🚀">
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```typescript
 const streamingImageVolume = new StreamingImageVolume({
@@ -458,19 +484,21 @@ const streamingImageVolume = new StreamingImageVolume({
 
 **迁移步骤：**
 
-1. 从构造函数参数中移除 `scalarData` 和 `sizeInBytes`。
-2. 将 `dataType` 和 `numberOfComponents` 添加到构造函数参数中。
-3. `VoxelManager` 将根据这些参数在内部创建。
+1. 从构造函数参数中去掉 `scalarData` 和 `sizeInBytes`。
+2. 向构造函数参数中加入 `dataType` 和 `numberOfComponents`。
+3. `VoxelManager` 会依据这些参数在内部创建。
 
-**解释：**
-此更改反映了从使用大规模标量数据数组转向使用 `VoxelManager` 进行数据管理。这可以实现更高效的内存使用，并更好地处理流数据。
+**说明：**
+这项改动体现了从「使用大型标量数据数组」转向「用 VoxelManager 管理数据」
+的思路转变。它带来更高效的内存使用，也更好地支持流式数据。
 
-#### 访问体积属性
+#### 访问体数据的属性 {#accessing-volume-properties}
 
-由于 `VoxelManager` 的集成，一些体积属性的访问方式发生了变化。原因是我们不再为体积完全创建 `vtkScalarData`，因此无法像以前那样访问。
+由于整合了 `VoxelManager`，有些体数据属性的访问方式变了。
+原因是我们不再为体数据完整创建 vtkScalarData，所以不能像以前那样访问。
 
 <Tabs>
-  <TabItem value="Before" label="Before 📦 " default>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```typescript
 const numberOfComponents = imageData
@@ -480,7 +508,7 @@ const numberOfComponents = imageData
 ```
 
   </TabItem>
-  <TabItem value="After" label="After 🚀🚀">
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```typescript
 const { numberOfComponents } = imageData.get('numberOfComponents');
@@ -491,34 +519,53 @@ const { numberOfComponents } = imageData.get('numberOfComponents');
 
 **迁移步骤：**
 
-1. 将 `getPointData().getScalars().getNumberOfComponents()` 替换为 `get('numberOfComponents')`。
-2. 使用解构语法提取 `numberOfComponents` 属性。
+1. 把 `getPointData().getScalars().getNumberOfComponents()` 替换为
+   `get('numberOfComponents')`。
+2. 用解构语法取出 `numberOfComponents` 属性。
 
-::info
-这些更改代表了 Cornerstone 库对图像体积和纹理处理的重大更新。引入 `VoxelManager` 和消除体积的巨大标量数据数组带来了以下几个好处：
+:::info
+这些改动是 Cornerstone 库在影像体数据与纹理处理方面的一次重大更新。
+引入 VoxelManager、并取消体数据的大型标量数据数组，带来若干好处：
 
-1. **减少内存使用：** 通过依赖单个图像而不是大型数组缓冲区，显著减少了内存使用，尤其是对于大型数据集。
-2. **提高性能：** `VoxelManager` 允许更高效的数据访问和操作，从而提高整体性能。
-3. **更好的流式支持：** 新方法更适合流式处理大型数据集，因为它不需要一次性将整个体积加载到内存中。
-4. **更灵活的数据管理：** `VoxelManager` 提供了一个统一的接口，用于访问和修改体素数据，无论底层数据结构如何。
+1. 内存占用下降：依赖单张影像而不是一整个大数组缓冲区，
+   内存占用显著减少，对大型数据集尤其明显。
+2. 性能提升：VoxelManager 让数据访问和操作更高效，整体性能更好。
+3. 更好地支持流式加载：这套新方式更适合流式处理大型数据集，
+   因为它不需要一次把整份体数据载入内存。
+4. 数据管理更灵活：无论底层数据结构如何，VoxelManager
+   都提供了统一的访问与修改体素数据的接口。
 
-开发人员需要更新代码以使用新的 `VoxelManager` API，并调整与体积数据和纹理的交互方式。虽然这些更改可能需要对现有代码进行重大更新，但它们为处理大型医学影像数据集提供了更高效和灵活的基础。
+开发者需要更新代码以使用新的 VoxelManager API，
+并调整与体数据及纹理交互的方式。虽然这些改动可能需要对既有代码做不小的更新，
+但它们为处理大型医学影像数据集提供了一个更高效、更灵活的基础。
 :::
 
-我们已将这一新设计应用于体积和堆栈视口。
+我们已经把这套新设计同时应用到了体数据视口和堆栈视口上。
 
-## 图像加载器
+## 影像加载器 {#image-loader}
 
-## 体积加载器
+:::note 上游此节为空
 
-版本 2 中的体积加载和缓存功能发生了重大变化。主要更新包括 API 的简化、移除某些工具函数，以及体积创建和缓存方式的变化。
+官方英文原文中「Image Loader」这一节只有标题、没有正文。
+影像加载器在 2.x 中的相关变更，可以参考
+[@cornerstonejs/dicom-image-loader](./6-dicom-image-loader.md) 那一页，
+概念性说明见[影像加载器](../../1-concepts/cornerstone-core/imageLoader.md)。
 
-### 体积创建函数的变化
+:::
 
-`createLocalVolume` 函数已更新，`volumeId` 作为第一个参数，`options` 作为第二个参数。
+## VolumeLoader {#volumeloader}
+
+体数据的加载与缓存功能在版本 2 中有较大改动，
+主要包括 API 的简化、部分工具函数的移除，
+以及体数据创建与缓存方式的变化。
+
+### 体数据创建函数的变化 {#changes-in-volume-creation-functions}
+
+`createLocalVolume` 函数已更新：现在第一个参数是 `volumeId`，
+第二个参数是 options。
 
 <Tabs>
-  <TabItem value="Before" label="Before 📦 " default>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```typescript
 function createLocalVolume(
@@ -531,7 +578,7 @@ function createLocalVolume(
 ```
 
   </TabItem>
-  <TabItem value="After" label="After 🚀🚀">
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```typescript
 function createLocalVolume(
@@ -547,15 +594,15 @@ function createLocalVolume(
 
 **迁移步骤：**
 
-1. 更新所有对 `createLocalVolume` 的调用，将 `volumeId` 参数移到第一个位置。
-2. 移除 `preventCache` 参数，如果需要，单独处理缓存。
+1. 更新所有 `createLocalVolume` 的调用，把 `volumeId` 参数挪到第一位。
+2. 去掉 `preventCache` 参数；如有需要，另行处理缓存。
 
-### 派生体积创建的变化
+### 派生体数据创建的变化 {#changes-in-derived-volume-creation}
 
-`createAndCacheDerivedVolume` 函数现在同步返回，而不是返回一个 Promise。
+`createAndCacheDerivedVolume` 函数现在同步返回，不再返回 Promise。
 
 <Tabs>
-  <TabItem value="Before" label="Before 📦 " default>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```typescript
 async function createAndCacheDerivedVolume(
@@ -567,7 +614,7 @@ async function createAndCacheDerivedVolume(
 ```
 
   </TabItem>
-  <TabItem value="After" label="After 🚀🚀">
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```typescript
 function createAndCacheDerivedVolume(
@@ -583,27 +630,28 @@ function createAndCacheDerivedVolume(
 
 **迁移步骤：**
 
-1. 移除调用 `createAndCacheDerivedVolume` 时的 `await` 关键字。
-2. 更新任何期望 Promise 的代码，以处理同步返回值。
+1. 调用 `createAndCacheDerivedVolume` 时去掉 `await`。
+2. 把那些期待 Promise 的代码改为处理同步返回值。
 
-### 重命名函数
+### 被重命名的函数 {#renamed-functions}
 
-一些函数已被重命名以增强清晰度：
+有些函数为表意清晰而改了名：
 
-- `createAndCacheDerivedSegmentationVolume` 现在是 `createAndCacheDerivedLabelmapVolume`
-- `createLocalSegmentationVolume` 现在是 `createLocalLabelmapVolume`
+- `createAndCacheDerivedSegmentationVolume` 现在叫 `createAndCacheDerivedLabelmapVolume`
+- `createLocalSegmentationVolume` 现在叫 `createLocalLabelmapVolume`
 
 **迁移步骤：**
 
-1. 更新所有调用这些函数的地方，使用它们的新名称。
-2. 确保任何引用这些函数的代码也被相应地更新。
+1. 把所有对这些函数的调用改用新名字。
+2. 确认引用了这些函数的代码都已相应更新。
 
-### 目标缓冲区类型迁移
+### targetBuffer 类型的迁移 {#target-buffer-type-migration}
 
-`targetBufferType` 选项已被替换为库中各个地方的 `targetBuffer` 对象。这一更改影响了多个函数和接口。
+整个库中，`targetBufferType` 选项都已被 `targetBuffer` 对象取代。
+这项改动影响多个函数和接口。
 
 <Tabs>
-  <TabItem value="Before" label="Before 📦 " default>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```typescript
 interface DerivedImageOptions {
@@ -631,7 +679,7 @@ function createAndCacheDerivedImages(
 ```
 
   </TabItem>
-  <TabItem value="After" label="After 🚀🚀">
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```typescript
 interface DerivedImageOptions {
@@ -665,17 +713,18 @@ function createAndCacheDerivedImages(
 
 **迁移步骤：**
 
-1. 更新所有使用 `targetBufferType` 的接口和函数签名，改为使用 `targetBuffer`。
-2. 将所有出现的 `targetBufferType: 'SomeType'` 改为 `targetBuffer: { type: 'SomeType' }`。
-3. 更新所有之前使用 `targetBufferType` 的函数调用，改为使用新的 `targetBuffer` 对象结构。
-4. 检查并更新所有依赖 `targetBufferType` 属性的代码，确保现在使用的是 `targetBuffer.type`。
+1. 把所有使用 `targetBufferType` 的接口和函数签名改为使用 `targetBuffer`。
+2. 把所有 `targetBufferType: 'SomeType'` 改为 `targetBuffer: { type: 'SomeType' }`。
+3. 更新所有此前使用 `targetBufferType` 的函数调用，改用新的 `targetBuffer` 对象结构。
+4. 检查并更新所有依赖 `targetBufferType` 属性的代码，确保它们改用 `targetBuffer.type`。
 
-### `createAndCacheDerivedImage` 函数的变更
+### `createAndCacheDerivedImage` 函数的变化 {#changes-in-createandcachederivedimage-function}
 
-`createAndCacheDerivedImage` 函数现在直接返回一个 `IImage` 对象，而不是一个 Promise。
+`createAndCacheDerivedImage` 函数现在直接返回一个 `IImage` 对象，
+而不再返回 Promise。
 
 <Tabs>
-  <TabItem value="Before" label="Before 📦 " default>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```typescript
 export function createAndCacheDerivedImage(
@@ -689,7 +738,7 @@ export function createAndCacheDerivedImage(
 ```
 
   </TabItem>
-  <TabItem value="After" label="After 🚀🚀">
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```typescript
 export function createAndCacheDerivedImage(
@@ -706,15 +755,17 @@ export function createAndCacheDerivedImage(
 
 **迁移步骤：**
 
-1. 更新任何期望从 `createAndCacheDerivedImage` 获得 Promise 的代码，改为使用直接返回的 `IImage` 对象。
-2. 移除函数调用中的 `preventCache` 参数，因为该参数不再使用。
+1. 把那些期待 `createAndCacheDerivedImage` 返回 Promise 的代码，
+   改为直接使用返回的 `IImage` 对象。
+2. 从函数调用中去掉 `preventCache` 参数，它已不再使用。
 
-### 派生图像创建
+### 派生影像的创建 {#derived-image-creation}
 
-`createAndCacheDerivedImage` 函数已经更新，直接返回 `IImage` 对象，而不是一个 Promise。
+`createAndCacheDerivedImage` 函数已更新为直接返回 `IImage` 对象，
+而不再返回 Promise。
 
 <Tabs>
-  <TabItem value="Before" label="Before 📦 " default>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```typescript
 function createAndCacheDerivedImage(
@@ -726,7 +777,7 @@ function createAndCacheDerivedImage(
 ```
 
   </TabItem>
-  <TabItem value="After" label="After 🚀🚀">
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```typescript
 function createAndCacheDerivedImage(
@@ -742,15 +793,15 @@ function createAndCacheDerivedImage(
 
 **迁移步骤：**
 
-1. 移除使用 `createAndCacheDerivedImage` 时的 `await` 或 `.then()` 调用。
-2. 更新错误处理，捕获同步错误，而不是 Promise 拒绝错误。
+1. 使用 `createAndCacheDerivedImage` 时去掉所有 `await` 或 `.then()`。
+2. 把错误处理改为捕获同步抛出的错误，而不是 Promise 的 rejection。
 
-### 图像加载选项
+### 影像加载选项 {#image-loading-options}
 
-`targetBufferType` 选项已被 `targetBuffer` 对象替换。
+`targetBufferType` 选项已被 `targetBuffer` 对象取代。
 
 <Tabs>
-  <TabItem value="Before" label="Before 📦 " default>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```typescript
 const options: DerivedImageOptions = {
@@ -759,7 +810,7 @@ const options: DerivedImageOptions = {
 ```
 
   </TabItem>
-  <TabItem value="After" label="After 🚀🚀">
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```typescript
 const options: DerivedImageOptions = {
@@ -772,15 +823,15 @@ const options: DerivedImageOptions = {
 
 **迁移步骤：**
 
-1. 在所有选项对象中将 `targetBufferType` 替换为 `targetBuffer`。
-2. 更新值为一个包含 `type` 属性的对象。
+1. 把所有选项对象里的 `targetBufferType` 替换为 `targetBuffer`。
+2. 把取值改为一个带 `type` 属性的对象。
 
-### 分割图像助手
+### 分割影像辅助函数 {#segmentation-image-helpers}
 
-分割图像助手函数已经重命名并更新。
+分割影像的辅助函数已被重命名并更新。
 
 <Tabs>
-  <TabItem value="Before" label="Before 📦 " default>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```typescript
 function createAndCacheDerivedSegmentationImages(
@@ -803,7 +854,7 @@ function createAndCacheDerivedSegmentationImage(
 ```
 
   </TabItem>
-  <TabItem value="After" label="After 🚀🚀">
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```typescript
 function createAndCacheDerivedLabelmapImages(
@@ -832,77 +883,89 @@ function createAndCacheDerivedLabelmapImage(
 
 **迁移步骤：**
 
-1. 将 `createAndCacheDerivedSegmentationImages` 重命名为 `createAndCacheDerivedLabelmapImages`。
-2. 将 `createAndCacheDerivedSegmentationImage` 重命名为 `createAndCacheDerivedLabelmapImage`。
-3. 更新函数调用，使用新的名称和参数结构。
-4. 使用 `createAndCacheDerivedLabelmapImage` 时，移除任何 `await` 或 `.then()` 调用。
+1. 把 `createAndCacheDerivedSegmentationImages` 改名为 `createAndCacheDerivedLabelmapImages`。
+2. 把 `createAndCacheDerivedSegmentationImage` 改名为 `createAndCacheDerivedLabelmapImage`。
+3. 更新函数调用，使用新名字和新的参数结构。
+4. 使用 `createAndCacheDerivedLabelmapImage` 时去掉所有 `await` 或 `.then()`。
 
-## 缓存类
+## Cache 类 {#cache-class}
 
-`Cache` 类在版本 2 中经历了显著的变化。以下是主要的更新和不兼容的更改：
+`Cache` 类在版本 2 中有较大改动。以下是主要更新和破坏性变更：
 
-### 移除特定于体积的缓存大小
+### 移除体数据专属的缓存大小 {#removal-of-volume-specific-cache-size}
 
-独立的体积缓存大小已被移除，简化了缓存管理，因为我们现在只依赖图像缓存。
+独立的体数据缓存大小已被移除，缓存管理得以简化——
+因为我们现在只依赖影像缓存这一处。
 
-**迁移步骤：**
+**迁移步骤**：
 
-1. 如果曾经使用过 `_volumeCacheSize`，请移除相关引用。
+1. 如果你有引用 `_volumeCacheSize` 的地方，请删掉。
 
-### `isCacheable` 方法更新
+### isCacheable 方法的更新 {#iscacheable-method-update}
 
-`isCacheable` 方法已经更新，以考虑共享缓存键。这意味着，由于我们现在只使用图像缓存，因此需要小心哪些图像可以被移除，以免删除仍由视图引用的体积。
+`isCacheable` 方法已更新为会考虑共享缓存键。也就是说，
+既然我们已经改为只用影像缓存，就必须小心判断哪些影像可以被清出缓存，
+以免把视图仍在引用的那份体数据给移除掉。
 
-### 新增 `putImageSync` 和 `putVolumeSync` 方法
+### 新增 putImageSync 与 putVolumeSync 方法 {#new-putimagesync-and-putvolumesync-methods}
 
-新增了 `putImageSync` 方法，允许直接同步将图像放入缓存。
+新增了 `putImageSync` 方法，用于同步地把一张影像直接放入缓存。
 
 <Tabs>
-  <TabItem value="Before" label="Before 📦 " default>
+  <TabItem value="Before" label="迁移前 📦 " default>
 
 ```typescript
-// 方法不存在
+// 该方法此前不存在
 ```
 
   </TabItem>
-  <TabItem value="After" label="After 🚀🚀">
+  <TabItem value="After" label="迁移后 🚀🚀">
 
 ```typescript
 public putImageSync(imageId: string, image: IImage): void {
-  // ... (验证代码)
+  // ...（校验代码）
 }
 
 public putVolumeSync(volumeId: string, volume: IImageVolume): void {
-  // ... (验证代码)
+  // ...（校验代码）
 }
 ```
 
   </TabItem>
 </Tabs>
 
-**迁移步骤：**
+:::note 与原文的一处差异
 
-1. 当需要将图像或体积同步添加到缓存时，使用新的 `putImageSync` 和 `putVolumeSync` 方法。
+官方英文原文中上面这段代码的围栏位置有误：`putVolumeSync` 那一半
+漏在了代码块之外，被当作正文渲染，并且 `putImageSync` 缺少收尾的花括号。
+这里已修正为一个完整的代码块。
 
-## 重命名和命名法
+:::
 
-### 枚举
+**迁移步骤**：
 
-#### 移除 `SharedArrayBufferModes`
+1. 需要同步地把影像或体数据加入缓存时，使用新的 `putImageSync`
+   和 `putVolumeSync` 方法。
 
-由于不再使用 `SharedArrayBuffer`，该枚举已被移除。
+## 重命名与术语 {#renaming-and-nomenclature}
 
-以下方法也已从 `@cornerstonejs/core` 中移除：
+### 枚举 {#enums}
 
-- `getShouldUseSharedArrayBuffer`
-- `setUseSharedArrayBuffer`
-- `resetUseSharedArrayBuffer`
+#### 移除 SharedArrayBufferModes {#removal-of-sharedarraybuffermodes}
 
-#### `ViewportType.WholeSlide` -> `ViewportType.WHOLE_SLIDE`
+由于我们不再使用 SharedArrayBuffer，这个枚举已被移除。
 
-为了与库中的其他部分保持一致，做了名称更改。
+以下方法也已从 @cornerstonejs/core 中移除：
 
-变更前：
+- getShouldUseSharedArrayBuffer
+- setUseSharedArrayBuffer
+- resetUseSharedArrayBuffer
+
+#### ViewportType.WholeSlide → ViewportType.WHOLE_SLIDE {#viewporttypewholeslide---viewporttypewhole_slide}
+
+以与库中其余部分保持一致。
+
+迁移前
 
 ```js
 const viewportInput = {
@@ -914,10 +977,11 @@ const viewportInput = {
     },
   };
 
-renderingEngine.enableElement(viewportInput);
+  renderingEngine.enableElement(viewportInput);
+
 ```
 
-变更后：
+迁移后
 
 ```js
 const viewportInput = {
@@ -929,40 +993,42 @@ const viewportInput = {
     },
   };
 
-renderingEngine.enableElement(viewportInput);
+  renderingEngine.enableElement(viewportInput);
+
 ```
 
-### 事件和事件详情
+### 事件与事件详情 {#events-and-event-details}
 
-#### `VOLUME_SCROLL_OUT_OF_BOUNDS` -> `VOLUME_VIEWPORT_SCROLL_OUT_OF_BOUNDS`
+#### VOLUME_SCROLL_OUT_OF_BOUNDS → VOLUME_VIEWPORT_SCROLL_OUT_OF_BOUNDS {#volume_scroll_out_of_bounds---volume_viewport_scroll_out_of_bounds}
 
-现在是 `VOLUME_VIEWPORT_SCROLL_OUT_OF_BOUNDS`。
+现在叫 `VOLUME_VIEWPORT_SCROLL_OUT_OF_BOUNDS`。
 
-#### `STACK_VIEWPORT_NEW_STACK` -> `VIEWPORT_NEW_IMAGE_SET`
+#### STACK_VIEWPORT_NEW_STACK → VIEWPORT_NEW_IMAGE_SET {#stack_viewport_new_stack---viewport_new_image_set}
 
-现在是 `VIEWPORT_NEW_IMAGE_SET`，我们将逐步让所有视口使用该事件。此外，该事件现在发生在元素上，而不是事件目标。
+现在叫 VIEWPORT_NEW_IMAGE_SET，我们会逐步让所有视口都改用这个事件。
 
-变更前：
+此外，该事件现在是在**元素**上触发的，而不是在 eventTarget 上。
 
 ```js
 eventTarget.addEventListener(Events.VIEWPORT_NEW_IMAGE_SET, newStackHandler);
-```
 
-变更后：
+// 现在应改为
 
-```js
 element.addEventListener(Events.VIEWPORT_NEW_IMAGE_SET, newStackHandler);
 ```
 
 <details>
 <summary>为什么？</summary>
 
-我们做出这个更改是为了保持一致性，因为所有其他事件（如 `VOLUME_NEW_IMAGE`）都是发生在元素上的。此修改更加合理，因为当视口有新的堆栈时，应该触发该事件在视口元素上。
+我们这样改是为了保持一致性——因为其他所有事件（例如 VOLUME_NEW_IMAGE）
+都是在元素上触发的。这样做也更合理：当视口拿到一批新的堆栈时，
+就应该在该视口元素本身上触发事件。
+
 </details>
 
-#### `CameraModifiedEventDetail`
+#### CameraModifiedEventDetail {#cameramodifiedeventdetail}
 
-不再发布 `rotation`，它已移至 `ICamera`，并在事件中发布。
+它不再发布 `rotation`，该字段已移入事件中所发布的 ICamera。
 
 ```js
 type CameraModifiedEventDetail = {
@@ -974,12 +1040,13 @@ type CameraModifiedEventDetail = {
 };
 ```
 
-从相机对象中访问 `rotation`，该对象之前在事件详情根部。
+请从 camera 对象中取 rotation——它此前位于事件详情的根层级。
 
-#### `ImageVolumeModifiedEventDetail`
+#### ImageVolumeModifiedEventDetail {#imagevolumemodifiedeventdetail}
 
-`imageVolume` 不再在事件详情中提供。现在，事件详情中只显示 `volumeId`，以保持与库中其他条目的一致性。这个更改确保了整个库内容的统一方法。
+事件详情中不再提供 `imageVolume`，只提供 `volumeId`，
+以与库中其他条目保持一致。这项改动确保了整个库的做法统一。
 
-如果需要 `imageVolume`，可以通过 `cache.getVolume` 方法获取。
+如果你需要 imageVolume，可以通过 `cache.getVolume` 方法取得。
 
 ---

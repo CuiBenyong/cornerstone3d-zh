@@ -1,17 +1,30 @@
 ---
 id: playwright-tests
-title: 编写Playwright测试
+title: 编写 Playwright 测试
+description: 用 Playwright 编写端到端测试的完整指南。涵盖针对既有示例与新增示例写测试、用 checkForScreenshot 做截图比对、用 simulateDrag 模拟鼠标拖拽、run-playwright.sh 包装脚本的各项标志、更新截图基线，以及手动托管示例与 VSCode 扩展录制测试。
+keywords:
+  - Playwright 测试
+  - visitExample
+  - checkForScreenshot
+  - simulateDrag
+  - run-playwright.sh
+  - update-snapshots
+  - 端到端测试
+upstream: https://www.cornerstonejs.org/docs/contribute/playwright-tests
 ---
 
-# 编写Playwright测试
+# 编写 Playwright 测试 {#writing-playwright-tests}
 
-我们的Playwright测试是使用Playwright测试框架编写的。我们使用这些测试来测试我们的示例并确保它们按预期工作，从而确保我们的包按预期工作。
+我们的 Playwright 测试是用 Playwright 测试框架写的。我们用这些测试来测我们的示例，
+确保它们按预期工作——这反过来也就确保了我们的各个包按预期工作。
 
-在本指南中，我们将向您展示如何为我们的示例编写Playwright测试、创建新的示例并对其进行测试。
+本指南将演示如何为我们的示例编写 Playwright 测试、如何新建示例并针对它做测试。
 
-## 针对现有示例进行测试
+## 针对既有示例写测试 {#testing-against-existing-examples}
 
-如果您想使用现有示例，您可以在`utils/ExampleRunner/example-info.json`文件中找到示例列表。您可以使用`exampleName`属性引用您想要使用的示例。例如，如果您想使用`annotationToolModes`示例，可以使用以下代码片段：
+如果你想使用某个既有示例，可以在 `utils/ExampleRunner/example-info.json`
+文件中找到示例清单。用 `exampleName` 属性来引用你想用的那个示例。
+例如想用 `annotationToolModes` 这个示例，可以这样写：
 
 ```ts
 import { test } from '@playwright/test';
@@ -23,14 +36,20 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Annotation Tool Modes', async () => {
   test('should do something', async ({ page }) => {
-    // Your test code here
+    // 你的测试代码写在这里
   });
 });
 ```
 
-## 针对新示例进行测试
+## 针对新增示例写测试 {#testing-against-new-examples}
 
-我们的Playwright测试是针对我们的示例运行的，如果您想添加一个新示例，可以将其添加到相应包的根目录下的`examples`文件夹中，例如，`packages/tools/examples/{your_example_name}/index.ts`，然后在`utils/ExampleRunner/example-info.json`文件中将其注册到正确的类别下，例如，如果它与工具相关，可以放入现有的`tools-basic`类别。如果找不到适合您示例的类别，可以创建一个新类别，并将其添加到`example-info.json`文件中的`categories`对象中。
+我们的 playwright 测试是跑在示例上的。如果你想新增一个示例，
+可以把它放到相应包根目录下的 `examples` 文件夹里，
+例如 `packages/tools/examples/{your_example_name}/index.ts`，
+然后在 `utils/ExampleRunner/example-info.json` 文件中把它注册到正确的分类下——
+比如它与工具相关，就可以放进既有的 `tools-basic` 分类。
+如果找不到合适的分类，你也可以新建一个分类，
+把它加到 `example-info.json` 的 `categories` 对象里。
 
 ```json
 {
@@ -50,7 +69,8 @@ test.describe('Annotation Tool Modes', async () => {
 }
 ```
 
-完成此操作后，您可以通过使用`tests/utils/visitExample.ts`文件中的`visitExample`函数来针对该示例编写测试。例如，如果您想针对`your_example_name`示例编写测试，可以使用以下代码片段：
+做完这一步，就可以用 `tests/utils/visitExample.ts` 中的 `visitExample`
+函数针对该示例写测试了。例如想为 `your_example_name` 这个示例写测试：
 
 ```ts
 import { test } from '@playwright/test';
@@ -62,16 +82,21 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Your Example Name', async () => {
   test('should do something', async ({ page }) => {
-    // Your test code here
+    // 你的测试代码写在这里
   });
 });
 ```
 
-这还会使您的示例出现在我们的文档页面上，以便用户可以了解如何使用该示例，因此通过添加新示例您可以增加双重价值。
+这样做还会让你的示例出现在我们的文档页面上，使用者就能看到该示例怎么用——
+所以新增一个示例其实是一举两得。
 
-## 截图
+## 截图 {#screenshots}
 
-检查测试是否按预期工作的一个好方法是在测试的不同阶段捕获截图。您可以使用位于`tests/utils/checkForScreenshot.ts`中的`checkForScreenshot`函数来捕获截图。您还应提前规划好截图，截图需要在`tests/utils/screenshotPaths.ts`文件中定义。例如，如果您想在添加测量后捕获截图，可以这样定义截图路径：
+检查测试是否按预期工作的一个好办法，是在测试的不同阶段截图。
+可以用位于 `tests/utils/checkForScreenshot.ts` 的 `checkForScreenshot`
+函数来截图。你还应当提前规划好要截哪些图——
+截图需要先在 `tests/utils/screenshotPaths.ts` 文件中定义。
+例如想在添加一次测量之后截图，可以这样定义截图路径：
 
 ```ts
 const screenShotPaths = {
@@ -82,7 +107,9 @@ const screenShotPaths = {
 };
 ```
 
-即使截图尚不存在也没关系，这将在下一步中解决。一旦定义了截图路径，就可以在测试中使用`checkForScreenshot`函数来捕获截图。例如，如果您想在添加测量后捕获`.cornerstone-canvas`元素的截图，可以使用以下代码片段：
+此时截图文件还不存在也没关系，下一步会处理。定义好截图路径之后，
+就可以在测试里用 `checkForScreenshot` 函数来截图了。
+例如想在添加一次测量之后对 `cornerstone-canvas` 元素截图：
 
 ```ts
 import { test } from '@playwright/test';
@@ -98,7 +125,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Your Example Name', async () => {
   test('should do something', async ({ page }) => {
-    // Your test code here to add a measurement
+    // 你添加一次测量的测试代码写在这里
     const locator = page.locator('.cornerstone-canvas');
     await checkForScreenshot(
       page,
@@ -109,11 +136,19 @@ test.describe('Your Example Name', async () => {
 });
 ```
 
-首次运行测试时，测试将自动失败，但它会为您生成截图。您会注意到在`tests/screenshots`文件夹中有三项新条目，分别是在`chromium/your-example.spec.js/measurementAdded.png`、`firefox/your-example.spec.js/measurementAdded.png`和`webkit/your-example.spec.js/measurementAdded.png`文件夹下。您现在可以再次运行测试，它将使用这些截图来与示例的当前状态进行比较。请在提交或对其进行测试之前验证基准截图是否正确。
+这个测试第一次运行时必然会失败，但它会帮你把截图生成出来：
+你会在 `tests/screenshots` 文件夹下看到 3 个新条目，分别位于
+`chromium/your-example.spec.js/measurementAdded.png`、
+`firefox/your-example.spec.js/measurementAdded.png` 和
+`webkit/your-example.spec.js/measurementAdded.png`。
+这时再跑一次测试，它就会拿这些截图与示例当前的状态做比对。
+在提交这些基准截图、或用它们做比对之前，请先确认它们是正确的。
 
-## 模拟鼠标拖拽
+## 模拟鼠标拖拽 {#simulating-mouse-drags}
 
-如果您想模拟鼠标拖拽，可以使用位于`tests/utils/simulateDrag.ts`中的`simulateDrag`函数。您可以使用此函数来模拟对元素的鼠标拖拽。例如，如果您想模拟对`.cornerstone-canvas`元素的鼠标拖拽，可以使用以下代码片段：
+如果想模拟鼠标拖拽，可以用位于 `tests/utils/simulateDrag.ts` 的
+`simulateDrag` 函数。它可以在任意元素上模拟鼠标拖拽。
+例如想在 `cornerstone-canvas` 元素上模拟拖拽：
 
 ```ts
 import {
@@ -143,37 +178,112 @@ test.describe('Basic Stack Manipulation', async () => {
 });
 ```
 
-我们的模拟拖拽工具可以模拟对任何元素的拖拽，并避免超出边界。它会计算元素的边界框，确保拖拽动作保持在元素的边界内。这对于大多数工具应该已经足够好，比提供自定义的x和y坐标更好，因为自定义坐标容易出错，并且使代码难以维护。
+我们这个拖拽模拟工具可以在任意元素上模拟拖拽，并且不会拖出边界。
+它会计算该元素的包围盒，确保拖拽保持在元素范围之内。
+这对大多数工具来说已经够用，而且比自己传入自定义的 x、y 坐标更好——
+后者容易出错，也让代码难以维护。
 
-## 运行测试
+## 运行测试 {#running-the-tests}
 
-编写测试后，可以通过使用以下命令来运行它们：
-
-```bash
-yarn test:e2e:ci
-```
-
-如果您想使用头部模式，可以使用以下命令：
+写好测试之后，可以用下面的命令运行：
 
 ```bash
-yarn test:e2e:headed
+./scripts/run-playwright.sh
+./scripts/run-playwright.sh --compat
+./scripts/run-playwright.sh --cpu
+./scripts/run-playwright.sh --next
 ```
 
-您将在终端中看到测试结果，如果想要详细报告，可以使用以下命令：
+这个包装脚本会运行 `npx playwright test`、按所选模式自动挑选测试文件，
+并把带时间戳的日志和产物写到 `reports/` 下。
+
+例如：
 
 ```bash
-yarn playwright show-report tests/playwright-report
+reports/legacy-playwright/<timestamp>/
+reports/compat-playwright/<timestamp>/
+reports/compat-cpu-playwright/<timestamp>/
+reports/generic-viewport-playwright/<timestamp>/
 ```
 
-## 手动服务示例以便开发
+该包装脚本支持的标志：
 
-默认情况下，当您运行测试时，它会调用`yarn build-and-serve-static-examples`命令首先提供示例服务，然后运行测试，如果您想手动提供示例服务，可以使用相同的命令。示例将可在`http://localhost:3000`上获得。这可以加速您的开发过程，因为Playwright将跳过构建和服务步骤，并使用3000端口上的现有服务器。
+- `--compat`：以 `?type=next` 打开示例页面。
+- `--cpu`：以 `?cpu=1` 打开示例页面。
+- `--next`：只运行 `tests/genericViewport/**/*.spec.ts`。
 
-## Playwright VSCode扩展和录制测试
+Playwright 的 `--next` 与 Karma 的 `--next` **含义不同**。
+Playwright 用它只选取 `tests/genericViewport` 那套测试；
+而 Karma 用它作为便捷模式，跑兼容模式和 CPU 两轮。
 
-如果您正在使用VSCode，可以使用Playwright扩展来帮助您编写测试。该扩展提供了一个测试运行程序和许多强大功能，例如使用鼠标选择定位器、录制新测试等。您可以通过在VSCode的扩展选项卡中搜索`Playwright`或者访问[Playwright扩展页面](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright)来安装该扩展。
+其余参数会被直接透传给 `playwright test`，
+所以你仍然可以照常使用 Playwright 的 CLI：
 
-<!-- <div style={{padding:"56.25% 0 0 0", position:"relative"}}>
+```bash
+./scripts/run-playwright.sh --project chromium --headed
+./scripts/run-playwright.sh -g "stack viewport"
+./scripts/run-playwright.sh --workers 1
+./scripts/run-playwright.sh --update-snapshots
+```
+
+有用的环境变量：
+
+- `PLAYWRIGHT_REUSE_EXISTING_SERVER=true|false`：
+  控制是否复用已配置的本地示例服务器。
+- 包装脚本内部会设置 `PLAYWRIGHT_FORCE_COMPAT`、
+  `PLAYWRIGHT_FORCE_CPU_RENDERING`、`PLAYWRIGHT_HTML_OUTPUT_DIR`
+  和 `PLAYWRIGHT_HTML_OPEN=never`。
+
+例如：
+
+```bash
+./scripts/run-playwright.sh
+./scripts/run-playwright.sh --compat
+./scripts/run-playwright.sh --project chromium --headed
+./scripts/run-playwright.sh -g "stack viewport"
+PLAYWRIGHT_REUSE_EXISTING_SERVER=true ./scripts/run-playwright.sh --project chromium
+./scripts/run-playwright.sh --next
+```
+
+## 更新截图基线 {#updating-screenshot-baselines}
+
+Playwright 的快照文件存放在
+`tests/screenshots/<project>/<spec>/<name>.png`，
+路径模板来自 `playwright.config.ts`。
+
+常规运行会与那些已提交的截图做比对。要重写它们，
+把 Playwright 原生的快照标志透传给包装脚本即可：
+
+```bash
+./scripts/run-playwright.sh --update-snapshots
+./scripts/run-playwright.sh --next --update-snapshots
+./scripts/run-playwright.sh --project chromium --update-snapshots
+```
+
+## 开发时手动托管示例 {#serving-the-examples-manually-for-development}
+
+默认情况下，当 Playwright 需要启动自己的本地服务器时，
+它会在 `playwright.globalSetup.ts` 中构建这些示例，
+随后配置好的 `webServer` 会在 `http://localhost:3333` 上托管
+`.static-examples`。
+
+如果你想在开发期间自己手动托管这些示例，
+可以自己运行同一条命令，然后告诉 Playwright 复用这个已有的服务器：
+
+```bash
+yarn run build-and-serve-static-examples
+PLAYWRIGHT_REUSE_EXISTING_SERVER=true ./scripts/run-playwright.sh
+```
+
+## Playwright 的 VSCode 扩展与录制测试 {#playwright-vscode-extension-and-recording-tests}
+
+如果你用 VSCode，可以借助 Playwright 扩展来帮你写测试。
+该扩展提供了测试运行器以及许多很好用的功能，
+例如用鼠标点选 locator、录制一个新测试等等。
+在 VSCode 的扩展页搜索 `Playwright` 即可安装，
+也可以访问 [Playwright 扩展页面](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright)。
+
+<div style={{padding:"56.25% 0 0 0", position:"relative"}}>
     <iframe src="https://player.vimeo.com/video/949208495?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
     frameBorder="0" allow="cross-origin-isolated" allowFullScreen style= {{ position:"absolute",top:0,left:0,width:"100%",height:"100%"}} title="Playwright Extension"></iframe>
-</div> -->
+</div>

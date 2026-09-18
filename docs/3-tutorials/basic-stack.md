@@ -1,20 +1,34 @@
-# 渲染图像堆栈
+---
+id: basic-stack
+title: 渲染一组堆栈影像
+description: Cornerstone3D 入门教程：用堆栈视口渲染一组医学影像。逐步讲解库初始化、创建视口容器元素、实例化渲染引擎、通过 enableElement 创建 Stack 视口并用 setStack 设置影像，附完整可运行代码。
+keywords:
+  - Cornerstone3D 堆栈视口
+  - setStack
+  - enableElement
+  - RenderingEngine
+  - 渲染 DICOM 影像
+  - Cornerstone3D 教程
+upstream: https://www.cornerstonejs.org/docs/tutorials/basic-stack
+---
 
-在本教程中，您将学习如何渲染一组图像。
+# 渲染一组堆栈影像
 
-## 前言
+本教程将演示如何渲染一组堆栈影像。
 
-为了渲染一组图像，我们需要：
+## 前提
 
-- 初始化库
-- 一个`element`（HTMLDivElement）作为视口的容器
-- 图像的路径（`imageId`）
+要渲染一组影像，我们需要：
+
+- 执行各个库的初始化函数
+- 一个 `element`（HTMLDivElement）作为视口的容器
+- 影像的路径（即 `imageId`）
 
 ## 实现
 
-我们已经将图像存储在服务器上，供本教程使用。
+为了本教程的演示，我们已经把影像放在了服务器上。
 
-1. 初始化库
+1. 初始化各个库
 
 ```js
 import { init as coreInit } from '@cornerstonejs/core';
@@ -24,7 +38,7 @@ await coreInit();
 await dicomImageLoaderInit();
 ```
 
-2. 创建一个HTML元素并为其设置样式，使其看起来像一个视口。
+2. 创建一个 HTML 元素，并把它的样式设置成视口的样子。
 
 ```js
 const content = document.getElementById('content');
@@ -36,14 +50,15 @@ element.style.height = '500px';
 content.appendChild(element);
 ```
 
-接下来，我们需要一个`renderingEngine`和一个视口来渲染图像。
+接下来需要一个 `renderingEngine`（渲染引擎）和一个 `viewport`（视口）来渲染影像。
 
 ```js
 const renderingEngineId = 'myRenderingEngine';
 const renderingEngine = new RenderingEngine(renderingEngineId);
 ```
 
-然后，我们可以通过使用`enableElement` API在`renderingEngine`中创建一个视口。请注意，由于我们不想渲染一个体积数据集，因此指定视口类型为`Stack`。
+然后就可以用 `enableElement` API 在渲染引擎里创建一个 `viewport`。
+注意，本教程不打算渲染体数据，所以把视口类型指定为 `Stack`。
 
 ```js
 const viewportId = 'CT_AXIAL_STACK';
@@ -56,10 +71,11 @@ const viewportInput = {
 renderingEngine.enableElement(viewportInput);
 ```
 
-RenderingEngine将处理视口的创建，我们可以获取视口对象并设置图像，并选择要显示的图像索引。
+视口的创建由渲染引擎负责。我们可以取到视口对象，把影像设置到它上面，
+并指定要显示第几张影像。
 
 :::info
-我们在这里使用的`imageIds`是通过`createImageIdsAndCacheMetaData`函数生成的。
+这里用到的 imageId 是通过 `createImageIdsAndCacheMetaData` 函数生成的。
 
 ```js
 const imageIds = await createImageIdsAndCacheMetaData({
@@ -82,13 +98,13 @@ viewport.render();
 ```
 
 :::note 提示
-由于`imageIds`是一个图像ID数组，因此我们可以使用`setStack`的第二个参数来设置显示的图像索引。
+由于 imageIds 是一个 imageId 数组，可以用 `setStack` 的第二个参数指定显示其中的哪一张。
 :::
 
 ## 完整代码
 
 <details>
-<summary>查看完整代码</summary>
+<summary>完整代码</summary>
 
 ```js
 import { RenderingEngine, Enums, init as coreInit } from '@cornerstonejs/core';
@@ -111,7 +127,7 @@ async function run() {
   await coreInit();
   await dicomImageLoaderInit();
 
-  // 获取Cornerstone imageIds并将元数据加载到内存中
+  // 获取 Cornerstone 的 imageId，并把元数据取到内存中
   const imageIds = await createImageIdsAndCacheMetaData({
     StudyInstanceUID:
       '1.3.6.1.4.1.14519.5.2.1.7009.2403.334240657131972136850343327463',
@@ -145,22 +161,24 @@ run();
 
 </details>
 
-您应该会看到以下效果：
+你应该会看到这样的结果：
 
 ![](../assets/tutorial-basic-stack.png)
 
-## 阅读更多
+## 延伸阅读
 
-了解更多关于：
+进一步了解：
 
-- [imageId](../1-concepts/cornerstone-core/imageId.md)
+- [影像 ID（imageId）](../1-concepts/cornerstone-core/imageId.md)
 - [渲染引擎](../1-concepts/cornerstone-core/renderingEngine.md)
 - [视口](../1-concepts/cornerstone-core/viewports.md)
 
-如需了解更高级的`Stack Viewport`用法，请访问[StackViewport API](https://www.cornerstonejs.org/live-examples/stackapi)示例页面。
+堆栈视口的进阶用法，请访问
+<a href="https://www.cornerstonejs.org/live-examples/stackapi" target="_blank">StackViewport API</a>
+示例页面。
 
 :::note 提示
 
-- 访问[示例](https://www.cornerstonejs.org/docs/examples)页面查看如何在本地运行示例。
+- 到[示例](./examples.md)页面了解如何在本地运行这些示例。
 
 :::

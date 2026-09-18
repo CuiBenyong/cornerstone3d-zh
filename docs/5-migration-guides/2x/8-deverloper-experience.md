@@ -1,29 +1,39 @@
 ---
 id: developer-experience
-title: '开发者体验'
+title: 开发体验
+description: 从 1.x 升级到 2.x 时开发体验方面的改进。库内已消除全部依赖循环并由 linter 在 CI 中把关；Karma 测试的准备与清理逻辑集中到 setupTestEnvironment / cleanupTestEnvironment，视口创建被统一，假加载器的 imageId 也从编码字符串改为结构化对象。
+keywords:
+  - 开发体验
+  - 依赖循环
+  - setupTestEnvironment
+  - cleanupTestEnvironment
+  - createViewports
+  - encodeImageIdInfo
+  - Karma 测试
+  - Cornerstone3D 2.x 迁移
+upstream: https://www.cornerstonejs.org/docs/migration-guides/2x/developer-experience
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
+# 开发体验 {#developer-experience}
 
-# 开发者体验
+### 依赖循环 {#dependency-cycles}
 
-### 依赖循环
+我们已经移除了库中所有的依赖循环，现在它不存在任何这类问题。
+为了保持这一状态，我们在 linter 中加了规则，
+会在持续集成阶段捕获 pull request 中出现的任何依赖循环。
+此外，你也可以运行 `yarn run format-check` 来确认格式正确，
+同时顺带检查依赖问题。
 
-我们已经移除了库中的所有依赖循环，确保其不再出现任何此类问题。为了维持这一点，我们在 linter 中添加了规则，这些规则将在持续集成期间捕获 pull requests 中的任何依赖循环。此外，您可以运行 `yarn run format-check` 以确保格式正确，并检查依赖关系。
+### Karma 测试 {#karma-tests}
 
-### 发布的 API
+测试这块做了大量清理工作，下面细看。
 
-我们现已发布 DICOM 图像加载器和 Nifti 体积加载器的 API。因此，在创建 PR 时，别忘了运行 `yarn run build:update-api` 并将生成的文件包含在您的 PR 中。
+#### 准备与清理 {#setup-and-cleanup}
 
-### Karma 测试
-
-我们在清理测试方面做了大量工作，让我们深入了解一下
-
-#### 设置和清理
-
-以前，我们的逻辑是零散的：
+以前，这些逻辑是散落各处的：
 
 ```js
 beforeEach(function () {
@@ -62,7 +72,7 @@ afterEach(function () {
 });
 ```
 
-现在它被集中化了：
+现在它们被集中起来了：
 
 ```js
 beforeEach(function () {
@@ -95,15 +105,15 @@ afterEach(function () {
 ```
 
 <details>
-<summary>为什么?</summary>
+<summary>为什么？</summary>
 
-它导致了许多超时和竞争条件问题。
+旧写法引发了很多超时和竞态条件方面的问题。
 
 </details>
 
-#### 视口创建
+#### 视口的创建 {#viewport-creation}
 
-我们已将以前重复的视口创建逻辑集中到一个地方。
+我们把此前到处重复的视口创建逻辑集中到了一处。
 
 ```js
 const element = testUtils.createViewports(renderingEngine, {
@@ -114,15 +124,15 @@ const element = testUtils.createViewports(renderingEngine, {
 });
 ```
 
-#### 图像 Id
+#### Image Id {#image-id}
 
-以前，对于伪图像加载器，您应使用：
+以前，对那个假的影像加载器你得这么写：
 
 ```js
 const imageId1 = 'fakeImageLoader:imageURI_64_64_10_5_1_1_0';
 ```
 
-这个字符串编码了各种参数。现在，它已被重构为一个对象，以获得更好的清晰度：
+这个字符串把各种参数编码在了里面。现在它被改造成了一个对象，更清晰：
 
 ```js
 const imageInfo1 = {
@@ -140,7 +150,7 @@ const imageInfo1 = {
 const imageId1 = testUtils.encodeImageIdInfo(imageInfo1);
 ```
 
-同样地，体积 Id 也分存在
+volumeId 也有对应的写法：
 
 ```js
 const volumeId = testUtils.encodeVolumeIdInfo({
@@ -153,3 +163,4 @@ const volumeId = testUtils.encodeVolumeIdInfo({
   ySpacing: 1,
   zSpacing: 1,
 });
+```

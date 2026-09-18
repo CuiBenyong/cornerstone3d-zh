@@ -1,35 +1,43 @@
 ---
 id: selection
 title: 选择
+description: 标注可以被选中和取消选中，默认通过按住 Shift 键点击标注来完成。本文介绍 annotation.selection 命名空间下设置选中状态、获取全部已选标注，以及按工具名获取已选标注的 API。
+keywords:
+  - 标注选择
+  - setAnnotationSelected
+  - getAnnotationsSelected
+  - getAnnotationsSelectedByToolName
+  - Shift 点击
+upstream: https://www.cornerstonejs.org/docs/concepts/cornerstone-tools/annotation/selection
 ---
 
-# 选择
+# 选择 {#selection}
 
-可以选择和取消选择注释。通过按住 `Shift` 键（默认情况下）并点击注释来实现。
+标注可以被选中和取消选中。默认做法是按住 `Shift` 键并点击标注。
 
-## API
+## API {#api}
 
-有各种 API 用于选择和取消选择注释以及获取/设置方法
+选中与取消选中标注有多个 API，另有相应的 get / set 方法：
 
 ```js
 import { annotation } from '@cornerstonejs/tools';
 
-// 选择一个注释
+// 选中某个标注
 annotation.selection.setAnnotationSelected(
   annotationUID,
   (selected = true),
   (preserveSelected = false)
 );
 
-// 获取所有选中的注释
+// 取得所有已选中的标注
 annotation.selection.getAnnotationsSelected();
 
-// 获取特定工具的所有选中注释
+// 取得某个特定工具下所有已选中的标注
 annotation.selection.getAnnotationsSelectedByToolName(toolName);
 ```
 
-## 阅读更多
+## 延伸阅读 {#read-more}
 
 :::note TIP
-在 [**这里**](https://www.cornerstonejs.org/api/tools/namespace/annotation#selection) 阅读更多关于选择 API 的内容
+关于选择 API 的更多内容见[**这里**](https://www.cornerstonejs.org/docs/api/tools/namespaces/annotation/namespaces/selection/)
 :::

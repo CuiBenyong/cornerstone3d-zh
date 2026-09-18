@@ -1,31 +1,38 @@
 ---
 id: locking
-title: 锁定
+title: 加锁
+description: 标注可以被加锁以避免误改动。本文介绍 annotation.locking 命名空间下加锁、解锁、查询已加锁标注以及一次性解锁全部标注的 API。
+keywords:
+  - 标注加锁
+  - setAnnotationLocked
+  - getAnnotationsLocked
+  - unlockAllAnnotations
+upstream: https://www.cornerstonejs.org/docs/concepts/cornerstone-tools/annotation/locking
 ---
 
-# 锁定
+# 加锁 {#locking}
 
-可以锁定注释以避免意外更改。您可以使用锁定 API 来锁定/解锁注释。
+标注可以被加锁，以避免误改动。你可以用加锁 API 给标注加锁 / 解锁。
 
-## API
+## API {#api}
 
-有多种用于锁定和解锁注释的 API，以及获取/设置方法
+加锁与解锁标注有多个 API，另有相应的 get / set 方法：
 
 ```js
 import { annotation } from '@cornerstonejs/tools';
 
-// 锁定注释
+// 给某个标注加锁
 annotation.locking.setAnnotationLocked(annotationUID, (locked = true));
 
-// 获取所有锁定的注释
+// 取得所有已加锁的标注
 annotation.locking.getAnnotationsLocked();
 
-// 解锁所有注释
+// 解锁全部标注
 annotation.locking.unlockAllAnnotations();
 ```
 
-## 阅读更多
+## 延伸阅读 {#read-more}
 
 :::note TIP
-在[这里](https://www.cornerstonejs.org/api/tools/namespace/annotation#locking)阅读更多关于锁定 API 的信息
+关于加锁 API 的更多内容见[这里](https://www.cornerstonejs.org/docs/api/tools/namespaces/annotation/namespaces/locking)
 :::

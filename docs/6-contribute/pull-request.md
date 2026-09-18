@@ -1,28 +1,67 @@
 ---
 id: pull-request
 title: 如何贡献
+description: 为 Cornerstone3D 做贡献的指引：如何提报缺陷、如何通过 Pull Request 提交代码改动、提交改动时的若干建议，以及需要更新 package.json 依赖时必须遵循的安全审计流程。
+keywords:
+  - 如何贡献
+  - 提报缺陷
+  - Pull Request
+  - package.json
+  - yarn audit
+  - 依赖安全
+upstream: https://www.cornerstonejs.org/docs/contribute/pull-request
 ---
 
-# 如何贡献
+# 如何贡献 {#how-to-contribute}
 
-## 报告错误
+## 提报缺陷 {#reporting-bugs}
 
-如果您发现了一个错误，我们强烈建议您将其报告给项目维护者。您可以通过在项目的 Issue 跟踪器上创建一个新的 Issue，或者通过发送一个修复该错误的 Pull Request 来完成此操作。
-在报告错误时提供尽可能多的信息总是有帮助的，如果您能提供一个演示该错误的示例，将会有很大帮助。
+如果你发现了缺陷，我们非常鼓励你向项目维护者提报。你可以在项目的 issue
+跟踪器上新建一个 issue，或者直接提一个修复该缺陷的 pull request。
+提报缺陷时提供尽可能多的信息总是有帮助的；
+如果你还能提供一个能复现该缺陷的示例，那就帮了大忙。
 
-## 我想贡献代码 - 我该怎么做？
+## 我想贡献代码——该怎么做？ {#i-would-like-to-contribute-code---how-do-i-do-this}
 
-Fork 仓库，进行更改并提交 Pull Request。在提交 Pull Request 之前：
+fork 该仓库、做出你的改动，然后提交一个 pull request。在提交之前：
 
-- 确保您的更改已经过充分测试，并且您已经更新了项目的文档。
-- 确保您的测试 (`yarn run test`) 和构建 (`yarn run build`) 在您的机器本地正确工作，并确保它们都通过。
+- 确保你的改动有充分的测试，并且你已经更新了项目文档。
+- 确保测试（`yarn run test`）和构建（`yarn run build`）
+  在你本机上都能正常运行并全部通过。
 
-## 关于提交更改的任何指导？
+## 提交改动有什么建议吗？ {#any-guidance-on-submitting-changes}
 
-我们确实非常感谢代码贡献，但分类和集成贡献的代码更改可能非常耗时。在处理您的 Pull Request 时，请考虑以下提示：
+我们确实很感谢代码贡献，但分诊和整合外部提交的代码改动可能非常耗时。
+在准备 pull request 时请考虑以下几点：
 
-- 功能是否适合该仓库。如果您不确定，请考虑在论坛上发布。
-- 代码质量是否可接受。我们没有定义编码标准，但请确保它通过 ESLint 并且看起来与仓库中的其他代码相似。
-- 设计质量是否可接受。这有点主观，所以您应该考虑在论坛上发布以获得具体指导。
-- Pull Request 的范围不应过大。请考虑为每个功能提交单独的 Pull Request，因为大的 Pull Request 非常费时且难以理解。
-- 我们会尽快对您的 Pull Request 提供反馈。遵循上述提示将有助于确保您的更改得到审查。
+- 功能适合放进这个仓库。如果不确定，可以先在论坛上发帖问问。
+- 代码质量可以接受。我们没有定义成文的编码规范，
+  但请确保它能通过 ESLint，并且看起来与仓库里其余代码风格一致。
+- 设计质量可以接受。这一点比较主观，建议到论坛上寻求具体指导。
+- pull request 的范围不要太大。请考虑为每个特性分别提 PR，
+  因为大的 PR 理解起来非常耗时。
+- 我们会尽快对你的 pull request 给出反馈。遵循上面这些建议
+  有助于确保你的改动得到评审。
+
+## 我的改动需要更新 package.json 里的依赖——流程是什么？ {#my-changes-require-updating-dependencies-in-the-packagejson-files---what-is-the-process-for-doing-this}
+
+一般来说你通常不需要更新那些 `package.json` 文件。
+但如果确实需要，你还必须同时更新 Cornerstone3D 的各个 lock 文件；
+也就是说，你得在**不**带 `--frozen-lockfile` 标志的情况下
+分别执行一次 `yarn` 和 `bun` 的 `install`。
+
+:::danger
+更新 `package.json` 文件必须谨慎，以免引入存在漏洞的第三方包和 / 或版本。
+在提交并推送代码之前，添加新包和 / 或新版本时应当这样做：
+
+1. 尽职调查：研究所添加的包和 / 或版本是否存在已知漏洞。
+2. 更新 `package.json` 文件。
+3. 执行 `yarn run install:update-lockfile`。
+   这会同时更新 `yarn.lock` 和 `bun.lock` 两个文件。
+4. 执行 `yarn run audit` 做最后一道安全检查。
+   它会同时运行 `yarn audit` 和 `bun audit`。
+5. 把 `yarn.lock` 和 `bun.lock` 两个文件都包含在你的提交里。
+
+如果你的调查或审计发现了**高**风险漏洞，**不要**提交或推送你的改动！
+低风险和中风险漏洞是可以接受的。
+:::

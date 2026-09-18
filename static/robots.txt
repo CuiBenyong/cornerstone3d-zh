@@ -1,3 +1,80 @@
+# Cornerstone3D 中文文档
+# https://cornerstone3d-zh.front-end-js.top
+
 User-agent: *
 Allow: /
+
+# ---------------------------------------------------------------------------
+# AI 检索与问答类爬虫
+#
+# 下面这些是显式放行，不是必需的配置——上面的通用规则已经允许了所有爬虫。
+# 写出来的目的是把意图固定下来：本站希望被 AI 搜索和问答系统抓取并引用。
+#
+# 需要知道的取舍：放行这些爬虫意味着内容可能被用于模型训练，同时也意味着
+# 内容有机会出现在 AI 生成的回答里并被标注来源。对一个希望被更多中文开发者
+# 找到的翻译文档站来说，后者的价值更大。如果哪天想改变这个立场，
+# 把对应的 Allow 改成 Disallow 即可。
+# ---------------------------------------------------------------------------
+
+# OpenAI：ChatGPT 检索与训练
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic：Claude 检索与训练
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# Google：Gemini 与 Vertex AI 的内容使用由这个独立的 token 控制，
+# 与普通 Googlebot 的网页索引是两套开关。
+User-agent: Google-Extended
+Allow: /
+
+# 必应与 Copilot
+User-agent: bingbot
+Allow: /
+
+# Apple Intelligence
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Common Crawl：多个开源模型的语料来源
+User-agent: CCBot
+Allow: /
+
+# Meta
+User-agent: meta-externalagent
+Allow: /
+
+# 国内搜索引擎
+User-agent: Baiduspider
+Allow: /
+
+User-agent: Sogou web spider
+Allow: /
+
+User-agent: 360Spider
+Allow: /
+
 Sitemap: https://cornerstone3d-zh.front-end-js.top/sitemap.xml

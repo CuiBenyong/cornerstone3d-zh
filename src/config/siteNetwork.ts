@@ -24,12 +24,13 @@ export type NetworkSite = {
 
 export const NETWORK_SITES: NetworkSite[] = [
   {
-    id: 'hub',
-    name: '玄一',
-    tagline: '站点导航',
-    description: '全部项目与站点的入口汇总。',
+    id: 'konva',
+    name: 'Konva 中文文档',
+    tagline: 'Canvas 2D 图形库',
+    description:
+      'Konva.js 官方文档的中文翻译。图形绘制、事件处理、动画、滤镜与拖拽交互。',
     url: 'https://front-end-js.top',
-    badge: '导航',
+    badge: '文档',
   },
   {
     id: 'blog',

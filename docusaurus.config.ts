@@ -35,11 +35,12 @@ const siteStructuredData = {
   author: {
     '@type': 'Person',
     name: '玄一',
-    url: 'https://front-end-js.top',
+    // author.url 要指向能代表作者本人的页面，而不是作者名下的某个项目站点。
+    url: 'https://github.com/CuiBenyong',
     sameAs: [
+      'https://front-end-js.top',
       'https://blog.front-end-js.top',
       'https://course.front-end-js.top',
-      'https://github.com/CuiBenyong',
     ],
   },
   about: {

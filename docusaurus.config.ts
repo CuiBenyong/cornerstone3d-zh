@@ -136,6 +136,9 @@ const config: Config = {
 
   plugins: [llmsTxtPlugin],
 
+  /** 广告拦截检测，检测到拦截后强制读者关闭拦截才能继续浏览。原理见文件头注释。 */
+  clientModules: ['./src/clientModules/readerGate.ts'],
+
   headTags: [
     /**
      * 提前建立到广告服务器的连接。
